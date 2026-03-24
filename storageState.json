@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "auth_token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiUmFqbmkiLCJlbWFpbCI6InN1cGVyYWRtaW5AeW9wbWFpbC5jb20iLCJpZCI6MSwidGVuYW50SWQiOjEsInJvbGVJZCI6Miwicm9sZU5hbWUiOiJBZG1pbiIsImNyZWF0ZWQiOiIyMDI1LTAyLTA2VDA2OjQzOjI3Ljg1OVoiLCJpYXQiOjE3Njk2MDc4MDIsImV4cCI6MTc2OTc4MDYwMn0.Ka4Llf9xUuwRMWU6_4EMJmi4mEKeYPTytXej5XzITjU",
+      "domain": ".growexx-dev.hirin.ai",
+      "path": "/",
+      "expires": 1769780602.726611,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "loggedin_tenant_dev",
+      "value": "growexx-dev",
+      "domain": ".hirin.ai",
+      "path": "/",
+      "expires": 1769780602.727634,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

@@ -1,0 +1,37 @@
+# Runs @smoke tests on a schedule. GitHub cron uses UTC only (no one-shot "tomorrow").
+# - 10:00 UTC daily → cron below. For India (IST) 10:00, use: cron: '30 4 * * *' (04:30 UTC).
+# First run: next calendar trigger after you push this file (e.g. if you push before 10:00 UTC, same day).
+name: Smoke tests (scheduled)
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        run: npx playwright test --grep "@smoke" --project=chromium
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-smoke-report
+          path: playwright-report/
+          retention-days: 14

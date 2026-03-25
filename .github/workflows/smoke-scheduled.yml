@@ -27,7 +27,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run smoke tests
-        run: npx playwright test --grep "@smoke" --project=chromium
+        run: npx playwright test --grep '@smoke' --project=chromium
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

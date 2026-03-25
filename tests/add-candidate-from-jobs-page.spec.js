@@ -166,7 +166,7 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-test.only('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
+test('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
   await uploadCandidate(page, FILE_PATH1, FIRST_NAME1);
 
   await page.getByTestId('next-button').click();
@@ -181,7 +181,7 @@ test.only('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage
   await expect(page.locator('span.candidate-name', { hasText: FIRST_NAME1 })).toBeVisible();
 });
 
-test.only('TC-AC-02 : Duplicate Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
+test('TC-AC-02 : Duplicate Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
   await uploadCandidate(page, FILE_PATH1, FIRST_NAME1);
   await page.getByTestId('next-button').click();
 

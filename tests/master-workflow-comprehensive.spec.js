@@ -198,7 +198,7 @@ test('Create job with Master Workflow and add a candidate @regression @masterWor
 
 });
 
-test.only('Create job with Master Workflow and update status manually @smoke @regression @masterWorkflow', async ({page}) => {
+test('Create job with Master Workflow and update status manually @smoke @regression @masterWorkflow', async ({page}) => {
     test.setTimeout(150000);
     await loginAndNavigateToCreateJob(page);
     await page.getByRole('button', {name: 'plus Create Job'}).click();

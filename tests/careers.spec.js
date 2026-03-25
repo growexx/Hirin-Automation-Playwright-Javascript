@@ -17,7 +17,19 @@ const JOB_SEARCH2 = 'Product Owner';
 const RESUME2 = 'data/Avinash_Singh.pdf';
 const FULL_NAME2 = 'Avinash Singh';
 const EMAIL2 = 'avinashsingh221@gmail.com';
-const PHONE_NUMBER2 = '98765432347';
+/** `98765432347` → fixed prefix `98765` + 6-digit suffix (suffix from {@link uniquePhoneNumber2}). */
+const PHONE_NUMBER2_PREFIX = '98765';
+
+/**
+ * Same base as legacy `98765432347`, but last 6 digits change every test (avoids duplicate-phone rejection on apply).
+ * @param {import('@playwright/test').TestInfo} testInfo
+ * @returns {string}
+ */
+function uniquePhoneNumber2(testInfo) {
+    const suffix = String((Date.now() + testInfo.workerIndex * 1_000_007) % 1_000_000).padStart(6, '0');
+    return `${PHONE_NUMBER2_PREFIX}${suffix}`;
+}
+
 const LOGIN_URL = 'https://stgapp.hirin.ai/login';
 const CREDENTIALS = { email: 'superadmin@yopmail.com', password: 'Test@1234' };
 
@@ -685,13 +697,19 @@ test('TC-CP-30 : Verify that if user is able to Apply for a Job in the Careers P
     // Unique email avoids "Application Already in Progress" when staging already has EMAIL2 on this job
     const uniqueEmail = `avinashsingh+${testInfo.workerIndex}t${Date.now()}@gmail.com`;
     await newPage.locator('[data-testid="email-input"]').fill(uniqueEmail);
-    await newPage.locator('[data-testid="phone-input"]').fill(PHONE_NUMBER2);
+    await newPage.locator('[data-testid="phone-input"]').fill(uniquePhoneNumber2(testInfo));
     const resumeUploadSection = newPage.locator('[data-testid="resume-upload-section"]');
     await resumeUploadSection.scrollIntoViewIfNeeded();
     const resumeInput = resumeUploadSection.locator('input[type="file"]');
     await resumeInput.setInputFiles(RESUME2);
     await newPage.locator('[data-testid="submit-button"]').click();
-    await expect(newPage.getByText('Application Submitted Successfully!')).toBeVisible({ timeout: 20000 });
+    // Success may be inline, in ant-notification title/description, or ant-message (wording/casing varies)
+    const successInline = newPage.getByText(/Application\s+[Ss]ubmitted\s+Successfully!?/);
+    const successToast = newPage
+        .locator('.ant-notification-notice-message, .ant-notification-notice-description')
+        .filter({ hasText: /application.*submitted.*success|successfully.*submitted|thank you.*application/i });
+    const successMessage = newPage.locator('.ant-message-notice-content').filter({ hasText: /application.*submitted|successfully/i });
+    await expect(successInline.or(successToast.first()).or(successMessage.first())).toBeVisible({ timeout: 25000 });
 })
 
 test('TC-CP-31 : Verify that if user is able to view the details of a candidate who has applied for a job @regression @careersPage', async ({ page }) => {

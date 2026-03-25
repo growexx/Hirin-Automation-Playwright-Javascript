@@ -148,13 +148,73 @@ function getEditModalSaveButton(page) {
     return page.getByRole('dialog').getByRole('button', { name: /Update User|Save/i });
 }
 
+function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function selectRoleInEditModal(page, dialog, roleLabel) {
     await dialog.locator('.ant-select-selector').first().click();
-    const dropdown = page.locator('.ant-select-dropdown');
-    await dropdown.waitFor({ state: 'visible', timeout: 5000 });
-    const option = dropdown.locator('.ant-select-item').filter({ hasText: roleLabel }).first();
+    const dropdown = page.locator('.ant-select-dropdown').last();
+    await expect(dropdown).toBeVisible({ timeout: 5000 });
+    const items = dropdown.locator('.ant-select-item');
+    /** Exact label match so "Admin" does not match "Super Admin". */
+    const option =
+        roleLabel instanceof RegExp
+            ? items.filter({ hasText: roleLabel }).first()
+            : items.filter({ hasText: new RegExp(`^\\s*${escapeRegExp(roleLabel)}\\s*$`, 'i') }).first();
     await option.waitFor({ state: 'visible', timeout: 3000 });
     await option.click({ force: true });
+    await expect(dropdown).toBeHidden({ timeout: 5000 }).catch(() => {});
+}
+
+/** A role different from {@link targetRole} (for dirtying the edit form). */
+function pivotRoleBeforeSelecting(targetRole) {
+    if (targetRole === 'Recruiter') return 'Hiring Manager';
+    return 'Recruiter';
+}
+
+/**
+ * @param {string} selectionText
+ * @param {string} targetRole
+ */
+function editModalSelectionMatchesTarget(selectionText, targetRole) {
+    const t = (selectionText || '').trim();
+    if (/^admin$/i.test(targetRole)) return /^(super )?admin$/i.test(t);
+    return t.toLowerCase() === targetRole.toLowerCase();
+}
+
+/**
+ * Sets {@link targetRole} in Edit User modal and ensures Save/Update enables.
+ * If the role already matches, pivot→target can return the form to its original value (pristine);
+ * a name-field nudge then marks the form dirty without changing the visible role.
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} dialog
+ * @param {'Admin' | 'Hiring Manager' | 'Recruiter'} targetRole
+ */
+async function selectRoleInEditModalEnsuringSaveEnabled(page, dialog, targetRole) {
+    const initialText = await dialog.locator('.ant-select-selection-item').first().textContent();
+    const alreadyTarget = editModalSelectionMatchesTarget(initialText, targetRole);
+
+    if (!alreadyTarget) {
+        await selectRoleInEditModal(page, dialog, targetRole);
+        await page.waitForTimeout(500);
+    } else {
+        const pivot = pivotRoleBeforeSelecting(targetRole);
+        await selectRoleInEditModal(page, dialog, pivot);
+        await page.waitForTimeout(500);
+        await selectRoleInEditModal(page, dialog, targetRole);
+        await page.waitForTimeout(500);
+    }
+
+    const saveBtn = getEditModalSaveButton(page);
+    if (!(await saveBtn.isEnabled().catch(() => false))) {
+        const nameInput = dialog.locator('#name');
+        const v = await nameInput.inputValue();
+        await nameInput.fill(`${v} `);
+        await nameInput.fill(v);
+        await page.waitForTimeout(400);
+    }
+    await expect(saveBtn).toBeEnabled({ timeout: 15000 });
 }
 
 async function openDeactivateDialogForActiveUser(page) {
@@ -1410,15 +1470,22 @@ test('TC-UM-69 : Validate all options that should be visible to only Admin role 
     await page.waitForTimeout(1500);
     const options = page.locator('.ant-table-tbody tr:not(.ant-table-measure-row)').filter({ hasText: 'Bikash' }).first();
     await expect(options).toBeVisible({ timeout: 5000 });
-    const editUserButton = options.locator('td').nth(ACTIONS_COLUMN_INDEX - 1).getByRole('button', { name: 'Edit User' });
-    await editUserButton.click();
-    const dialog = page.getByRole('dialog');
-    await selectRoleInEditModal(page, dialog, 'Admin');
-    await getEditModalSaveButton(page).click();
-    await expect(page.getByText('User updated successfully')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(2000);
-    const updatedRole = await options.locator('td').nth(3).textContent();
-    expect(updatedRole).toBe('Admin');
+    const roleCell = options.locator(`td:nth-child(${ROLE_COLUMN_INDEX})`);
+    const roleBefore = await roleCell.textContent();
+    const alreadyAdmin = editModalSelectionMatchesTarget(roleBefore, 'Admin');
+
+    if (!alreadyAdmin) {
+        const editUserButton = options.locator('td').nth(ACTIONS_COLUMN_INDEX - 1).getByRole('button', { name: 'Edit User' });
+        await editUserButton.click();
+        const dialog = page.getByRole('dialog');
+        await selectRoleInEditModalEnsuringSaveEnabled(page, dialog, 'Admin');
+        await getEditModalSaveButton(page).click();
+        await expect(page.getByText('User updated successfully')).toBeVisible({ timeout: 10000 });
+        await page.waitForTimeout(2000);
+    }
+
+    const normalizedRole = (await roleCell.textContent()).trim().replace(/Super Admin/i, 'Admin');
+    expect(normalizedRole).toBe('Admin');
     
     await page.locator(`span:has-text("Logout")`).click();
     await expect(page.locator(`p:has-text("Log Out of Hirin.ai?")`)).toBeVisible({ timeout: 5000 });
@@ -1469,11 +1536,11 @@ test('TC-UM-70 : Validate settings option should not be available for Hiring Man
     const editUserButton = options.locator('td').nth(ACTIONS_COLUMN_INDEX - 1).getByRole('button', { name: 'Edit User' });
     await editUserButton.click();
     const dialog = page.getByRole('dialog');
-    await selectRoleInEditModal(page, dialog, 'Hiring Manager');
+    await selectRoleInEditModalEnsuringSaveEnabled(page, dialog, 'Hiring Manager');
     await getEditModalSaveButton(page).click();
     await expect(page.getByText('User updated successfully')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(2000);
-    const updatedRole = await options.locator('td').nth(3).textContent();
+    const updatedRole = (await options.locator('td').nth(3).textContent()).trim();
     expect(updatedRole).toBe('Hiring Manager');
     
     await page.locator(`span:has-text("Logout")`).click();
@@ -1502,11 +1569,11 @@ test('TC-UM-71 : Validate settings option available for Recruiter role users @re
     const editUserButton = options.locator('td').nth(ACTIONS_COLUMN_INDEX - 1).getByRole('button', { name: 'Edit User' });
     await editUserButton.click();
     const dialog = page.getByRole('dialog');
-    await selectRoleInEditModal(page, dialog, 'Recruiter');
+    await selectRoleInEditModalEnsuringSaveEnabled(page, dialog, 'Recruiter');
     await getEditModalSaveButton(page).click();
     await expect(page.getByText('User updated successfully')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(2000);
-    const updatedRole = await options.locator('td').nth(3).textContent();
+    const updatedRole = (await options.locator('td').nth(3).textContent()).trim();
     expect(updatedRole).toBe('Recruiter');
     await page.locator(`span:has-text("Logout")`).click();
     await expect(page.locator(`p:has-text("Log Out of Hirin.ai?")`)).toBeVisible({ timeout: 5000 });

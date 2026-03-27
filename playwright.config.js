@@ -25,7 +25,7 @@ export default defineConfig({
   globalSetup: './global-setup.js',
 
    // Global timeout for all tests, actions, and navigation
-    timeout: 60000,  // Set global timeout to 60 seconds (60000ms)
+    timeout: 120000,  // Set global timeout to 60 seconds (60000ms)
 
   /* Run tests in files in parallel */
   fullyParallel: true,

@@ -11,8 +11,33 @@ const EMAIL = 'rajkashyap@gmail.com';
 const AADHAR = 'data/aadhar_card.pdf';
 const PAN ='data/pan_card.jpg';
 const SALARYSLIP = 'data/salary_slip.pdf';
-const FIRST_NAME = 'Raj'
+const FIRST_NAME = 'Raj';
+/** Same value as filled in the Add Candidate drawer (table shows full name). */
+const CANDIDATE_FULL_NAME = 'Raj Kashyap';
 const PHONE_NUMBER = '+91 9876543210';
+
+/**
+ * Jobs → Candidates tab: the blue name is often Ant Design `Button type="link"` → role **button**, not **link**.
+ * Prefer cells / button / anchor scoped to the `.ant-table` that contains the candidate name.
+ * @param {import('@playwright/test').Page} page
+ * @returns {import('@playwright/test').Locator}
+ */
+function jobsTableCandidateName(page) {
+  const shortName = new RegExp(FIRST_NAME, 'i');
+  const fullName = new RegExp(
+    CANDIDATE_FULL_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    'i'
+  );
+
+  const table = page.locator('.ant-table').filter({ hasText: fullName });
+
+  const inCell = table.locator('.ant-table-cell, td').filter({ hasText: fullName }).first();
+  const asLinkButton = table.getByRole('button', { name: shortName }).first();
+  const asAnchor = table.getByRole('link', { name: shortName }).first();
+  const byTestId = table.locator('[data-testid="candidate-name"]').first();
+
+  return inCell.or(asLinkButton).or(asAnchor).or(byTestId);
+}
 const EMAIL_PREFIX = EMAIL.split('@')[0];
 
 async function goToJob(page) {
@@ -80,7 +105,7 @@ async function removeIframe(page) {
     });
 }
 
-test('Create job with Master Flow + Document Submission', async ({page}) => {
+test('Create job with Master Flow + Document Submission @smoke @regression @documentSubmission', async ({page}) => {
     test.setTimeout(150000);
     await loginAndNavigateToCreateJob(page);
     await page.getByRole('button', {name: 'plus Create Job'}).click();
@@ -159,17 +184,22 @@ test('Add Candidate to the Master Flow + Document Submission workflow job create
     await expect(page.getByRole('link', {name: new RegExp('Raj', 'i')})).toBeVisible();
 
     await page.locator('[data-testid="candidate-name"]').click();
-    await page.getByRole('textbox', { name: 'Name' }).fill('Raj Kashyap');
+    await page.getByRole('textbox', { name: 'Name' }).fill(CANDIDATE_FULL_NAME);
     await page.locator('[data-testid="candidate-email"]').click();
     await page.getByRole('textbox', { name: 'email' }).fill(EMAIL);
     await page.locator('[data-testid="candidate-phone"]').click();
     await page.getByRole('textbox', { placeholder: 'e.g. +1 1234567890' }).fill(PHONE_NUMBER);
+    await page.click('body');
 
     await page.getByRole('button', {name: 'Done'}).click();
 
     await expect(page.getByText(new RegExp(`candidate.*successfully added.*${JOB_TITLE}`, 'i'))).toBeVisible();
 
-    await expect(page.locator('span.candidate-name', {hasText: FIRST_NAME})).toBeVisible();
+    // List often does not refresh until reload (same pattern as later tests).
+    await page.reload();
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
 });
 
 test('Manually update the candidate interview status for the candidate added in Master Flow + Document Submission workflow job created @smoke @regression @documentSubmission', async ({page}) => {
@@ -180,19 +210,31 @@ test('Manually update the candidate interview status for the candidate added in 
     await page.reload();
     await page.locator('#rc-tabs-0-tab-2').click();
 
-    await expect(page.locator('span.candidate-name', {hasText: FIRST_NAME})).toBeVisible();
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await expect(jobsTableCandidateName(page)).toBeVisible();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
 
-    await expect(page.getByText('Stage: Candidate Response Awaiting', {timeout: 30000})).toBeVisible();
-    await page.getByText('Stage: Candidate Response').click();
-    await page.getByText('Move to AI Interview').click();
+    await expect(page.getByText('Stage: CV Screening Pending', {timeout: 30000})).toBeVisible();
+    await page.getByText('Stage: CV Screening Pending').click();
+    await page.getByText('Move to Recruiter Screening').click();
     await page.getByTestId('note-input').click();
     await page.getByTestId('note-input').fill('Moving to next round');
     await page.getByTestId('submit-btn').click();
+    await expect(page.locator('body')).toContainText('Candidate has been successfully moved to "Recruiter Screening"');
+
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Candidate Response Awaiting')).toBeVisible();
+
+    await expect(page.getByText('Stage: Candidate Response Awaiting', {timeout: 30000})).toBeVisible();
+    await page.getByText('Stage: Candidate Response Awaiting').click();
+    await page.getByText('Move to AI Interview').click();
+    await page.getByTestId('note-input').click();
+    await page.getByTestId('note-input').fill('Moving to next round');
+    await page.getByTestId('submit-btn').click();    
     await expect(page.locator('body')).toContainText('Candidate has been successfully moved to "AI Interview"');
 
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
     await expect(page.getByText('Stage: AI Interview Awaiting')).toBeVisible();
 
@@ -203,7 +245,7 @@ test('Manually update the candidate interview status for the candidate added in 
     await page.getByTestId('submit-btn').click();
     await expect(page.locator('body')).toContainText('Candidate has been successfully moved to "HM Round"');
 
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
     await expect(page.getByText('Stage: HM Round Review Pending')).toBeVisible();
 
@@ -214,7 +256,7 @@ test('Manually update the candidate interview status for the candidate added in 
     await page.getByTestId('submit-btn').click();
     await expect(page.locator('body')).toContainText('Candidate has been successfully moved to "HM Round 2"');
 
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
     await expect(page.getByText('Stage: HM Round 2 Review Pending')).toBeVisible();
 
@@ -224,7 +266,7 @@ test('Manually update the candidate interview status for the candidate added in 
     await page.getByTestId('note-input').fill('Candidate is selected');
     await page.getByTestId('submit-btn').click();
     await expect(page.locator('body')).toContainText('Candidate has been successfully moved to "Select Candidate"', { timeout: 35000 });
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
     await expect(page.getByText('Stage: Document Submission Pending')).toBeVisible();
     await page.waitForTimeout(2000);
@@ -238,8 +280,8 @@ test('Open Yopmail,navigate to Document upload screen and upload the document @s
     await page.reload();
     await page.locator('#rc-tabs-0-tab-2').click();
 
-    await expect(page.locator('span.candidate-name', {hasText: FIRST_NAME})).toBeVisible();
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await expect(jobsTableCandidateName(page)).toBeVisible();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
     await expect(page.getByText(EMAIL)).toBeVisible();
 
@@ -283,8 +325,8 @@ test('Submitted documents status is updated in the candidate details page @smoke
     await page.reload();
     await page.locator('#rc-tabs-0-tab-2').click();
 
-    await expect(page.locator('span.candidate-name', {hasText: FIRST_NAME})).toBeVisible();
-    await page.locator('span.candidate-name', {hasText: FIRST_NAME}).click();
+    await expect(jobsTableCandidateName(page)).toBeVisible();
+    await jobsTableCandidateName(page).click();
     await page.waitForTimeout(3000);
 
     await expect(page.getByText(/Stage: Document Awaiting Review/)).toBeVisible({ timeout: 10000 });

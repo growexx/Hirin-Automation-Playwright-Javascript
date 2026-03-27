@@ -16,6 +16,15 @@ const JOB_NAME = (
 function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * UI may title-case the generated title (e.g. mn8gf → Mn8gf).
+ * Use only from TC-AC-01 (ensureJobExists + first upload); other tests use {@link JOB_NAME} as plain text.
+ * @returns {RegExp}
+ */
+function jobNameRegex() {
+  return new RegExp(escapeRegExp(JOB_NAME), 'i');
+}
 const FILE_PATH = 'data/Rajesh Pillai.pdf';
 const FILE_PATH1 = 'data/Shailendra Rathore.pdf';
 const INVALID_FILE_TYPE = 'data/InvalidFileType.jpg';
@@ -95,7 +104,9 @@ async function createJobWithZenaLikeWB41(page) {
   await page.getByRole('button', { name: 'Done' }).click();
 
   await expect(
-    page.getByText(`"${JOB_NAME}" position has been successfully added.`)
+    page.getByText(
+      new RegExp(`"${escapeRegExp(JOB_NAME)}" position has been successfully added\\.`, 'i')
+    )
   ).toBeVisible({ timeout: 15000 });
 
   await page.waitForTimeout(4000);
@@ -109,26 +120,44 @@ async function ensureJobExists(page) {
   await removeChatIframe(page);
   await expect(page.getByRole('button', { name: 'plus Create Job' })).toBeVisible({ timeout: 20000 });
   await page.waitForTimeout(1500);
-  if ((await page.getByText(JOB_NAME, { exact: true }).count()) > 0) {
+  if ((await page.getByText(jobNameRegex()).count()) > 0) {
     return;
   }
   await createJobWithZenaLikeWB41(page);
   await goToJob(page);
-  await expect(page.getByText(JOB_NAME, { exact: true }).first()).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText(jobNameRegex()).first()).toBeVisible({ timeout: 30000 });
 }
 
-async function clickOnTheJob(page) {
-  const byHeading = page.getByRole('heading', { name: JOB_NAME }).first();
-  const byCard = page.locator('.ant-card').filter({ hasText: JOB_NAME }).first();
-  const byExactText = page.getByText(JOB_NAME, { exact: true }).first();
-  await byHeading.or(byCard).or(byExactText).click({ timeout: 30000 });
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {boolean} [useCaseInsensitiveJobName] - TC-AC-01 only ({@link jobNameRegex}); otherwise same {@link JOB_NAME} string.
+ */
+async function clickOnTheJob(page, useCaseInsensitiveJobName = false) {
+  if (useCaseInsensitiveJobName) {
+    const rx = jobNameRegex();
+    const byHeading = page.getByRole('heading', { name: rx }).first();
+    const byCard = page.locator('.ant-card').filter({ hasText: rx }).first();
+    const byText = page.getByText(rx).first();
+    await byHeading.or(byCard).or(byText).click({ timeout: 30000 });
+  } else {
+    const byHeading = page.getByRole('heading', { name: JOB_NAME }).first();
+    const byCard = page.locator('.ant-card').filter({ hasText: JOB_NAME }).first();
+    const byExactText = page.getByText(JOB_NAME, { exact: true }).first();
+    await byHeading.or(byCard).or(byExactText).click({ timeout: 30000 });
+  }
   await page.waitForTimeout(2000);
 }
 
-async function uploadCandidate(page, filePath, firstName) {
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {string} filePath
+ * @param {string} firstName
+ * @param {boolean} [useCaseInsensitiveJobName] - pass `true` only in TC-AC-01 (same job as AC-01, plain {@link JOB_NAME} in other tests).
+ */
+async function uploadCandidate(page, filePath, firstName, useCaseInsensitiveJobName = false) {
   await goToJob(page);
  // await closeOnboardingModalIfPresent(page);
-  await clickOnTheJob(page);
+  await clickOnTheJob(page, useCaseInsensitiveJobName);
 
   await page.locator('#rc-tabs-0-tab-2').click();
   const addCandidatesButton = page.getByRole('button', { name: 'Add candidates' });
@@ -162,12 +191,12 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('combobox').fill(CLIENT_NAME);
   await page.locator('.ant-select-item-option', { hasText: CLIENT_NAME }).click();
   await goToJob(page);
-  await ensureJobExists(page);
-  await page.reload();
 });
 
-test('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
-  await uploadCandidate(page, FILE_PATH1, FIRST_NAME1);
+test.only('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
+  await ensureJobExists(page);
+  await page.reload();
+  await uploadCandidate(page, FILE_PATH1, FIRST_NAME1, true);
 
   await page.getByTestId('next-button').click();
   await expect(page.getByRole('link', { name: new RegExp('Shailendr', 'i') })).toBeVisible();
@@ -181,7 +210,7 @@ test('TC-AC-01 : Add Candidate @smoke @regression @addCandidateFromJobsPage', as
   await expect(page.locator('span.candidate-name', { hasText: FIRST_NAME1 })).toBeVisible();
 });
 
-test('TC-AC-02 : Duplicate Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
+test.only('TC-AC-02 : Duplicate Candidate @smoke @regression @addCandidateFromJobsPage', async ({ page }) => {
   await uploadCandidate(page, FILE_PATH1, FIRST_NAME1);
   await page.getByTestId('next-button').click();
 

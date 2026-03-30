@@ -32,7 +32,7 @@ async function removeIframe(page) {
  * Uses {@link JOB_TITLE} so the job matches {@link clickOnTheJob}.
  * @param {import('@playwright/test').Page} page
  */
-async function createJobWithZenaLikeWB41(page) {
+async function createJobWithZena(page) {
     await removeIframe(page);
     await page.getByRole('button', { name: 'plus Create Job' }).click();
     await page.getByRole('textbox', { name: /Write Job Title Here/i }).fill(JOB_TITLE);
@@ -82,7 +82,7 @@ async function ensureJobExistsForCloseJob(page) {
     if ((await page.getByText(JOB_TITLE, { exact: true }).count()) > 0) {
         return;
     }
-    await createJobWithZenaLikeWB41(page);
+    await createJobWithZena(page);
     await page.getByText('Jobs', { exact: true }).click();
     await expect(page.getByText(JOB_TITLE, { exact: true }).first()).toBeVisible({ timeout: 30000 });
 }

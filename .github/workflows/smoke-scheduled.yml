@@ -35,14 +35,14 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install --with-deps chromium
 
-      # line = one updating line in the log with the test currently running (good for CI).
+      # list = prints each test as a separate log line in GitHub Actions.
       # html = playwright-report/ for the artifact and email attachment.
       - name: Run smoke tests
         id: smoke_tests
         env:
           CI: true
           FORCE_COLOR: '0'
-        run: npx playwright test --grep '@smoke' --project=chromium --reporter=line --reporter=html
+        run: npx playwright test --grep '@smoke' --project=chromium --reporter=list --reporter=html
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

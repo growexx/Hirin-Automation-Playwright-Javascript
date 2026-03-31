@@ -1,0 +1,39 @@
+# Runs @regression tests once per week. GitHub Actions cron is UTC only.
+# Default: Fridays 05:00 UTC. For India (IST) Friday 10:30, use: cron: '0 5 * * 5' → adjust as needed.
+name: Regression tests (weekly)
+
+on:
+  schedule:
+    # Every Friday at 05:00 UTC
+    - cron: '0 5 * * 5'
+  workflow_dispatch:
+
+jobs:
+  regression:
+    timeout-minutes: 360
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run regression tests
+        env:
+          CI: true
+        run: npx playwright test --grep '@regression' --project=chromium
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-regression-report
+          path: playwright-report/
+          retention-days: 30

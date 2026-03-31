@@ -1,6 +1,15 @@
 # Runs @smoke tests on a schedule. GitHub cron uses UTC only (no one-shot "tomorrow").
 # - 10:00 UTC daily → cron below. For India (IST) 10:00, use: cron: '30 4 * * *' (04:30 UTC).
 # First run: next calendar trigger after you push this file (e.g. if you push before 10:00 UTC, same day).
+#
+# Live test names in the Actions log: enabled via --reporter=line (updates as each test runs).
+#
+# Email report (optional): same mailbox as local .env (OUTLOOK_EMAIL / OUTLOOK_PASSWORD).
+# GitHub cannot read your machine’s .env — add these Repository secrets (same values as .env):
+#   OUTLOOK_EMAIL     same as OUTLOOK_EMAIL in .env
+#   OUTLOOK_PASSWORD  same as OUTLOOK_PASSWORD in .env
+# Microsoft 365 / Outlook SMTP: smtp.office365.com:587 + STARTTLS (see email step).
+# If secrets are missing, the email step fails softly (continue-on-error).
 name: Smoke tests (scheduled)
 
 on:
@@ -26,8 +35,14 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install --with-deps chromium
 
+      # line = one updating line in the log with the test currently running (good for CI).
+      # html = playwright-report/ for the artifact and email attachment.
       - name: Run smoke tests
-        run: npx playwright test --grep '@smoke' --project=chromium
+        id: smoke_tests
+        env:
+          CI: true
+          FORCE_COLOR: '0'
+        run: npx playwright test --grep '@smoke' --project=chromium --reporter=line --reporter=html
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -35,3 +50,36 @@ jobs:
           name: playwright-smoke-report
           path: playwright-report/
           retention-days: 14
+
+      - name: Zip Playwright HTML report
+        id: zip_report
+        if: always() && !cancelled()
+        run: |
+          if [ -d playwright-report ] && [ -f playwright-report/index.html ]; then
+            zip -r playwright-smoke-report.zip playwright-report
+            echo "zip_created=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No HTML report to zip (playwright-report/index.html missing)."
+            echo "zip_created=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Email Playwright report
+        if: always() && !cancelled() && steps.zip_report.outputs.zip_created == 'true'
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.office365.com
+          server_port: 587
+          secure: false
+          username: ${{ secrets.OUTLOOK_EMAIL }}
+          password: ${{ secrets.OUTLOOK_PASSWORD }}
+          subject: '[Smoke] ${{ steps.smoke_tests.outcome }} — ${{ github.repository }} #${{ github.run_number }}'
+          to: ${{ secrets.OUTLOOK_EMAIL }}
+          from: ${{ secrets.OUTLOOK_EMAIL }}
+          body: |
+            Scheduled smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
+
+            Open the attached ZIP, extract it, and open playwright-report/index.html in a browser for the full HTML report.
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          attachments: playwright-smoke-report.zip

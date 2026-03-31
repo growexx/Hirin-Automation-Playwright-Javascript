@@ -159,7 +159,7 @@ test('Download report @smoke @regression @downloadReport', async ({ page }) => {
     await dateSelection(page);
     await page.getByTestId('report-generate-btn').click();
     await expect(page.getByRole('paragraph')).toContainText('Your report has been generated successfully.');
-    await page.waitForTimeout(3000);
+    await page.getByAltText('Close').click();
     const page1Promise = page.waitForEvent('popup');
     const downloadPromise = page.waitForEvent('download');
     await page.getByTestId('report-download-btn').click();

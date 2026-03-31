@@ -21,6 +21,10 @@ async function loginAndNavigateToCandidatesReport(page) {
 
   await page.locator('div').filter({ hasText: /^Candidates$/ }).click();
   await page.waitForTimeout(5000);
+  const closeButton = page.getByRole('button', { name: 'close', exact: true });
+  if (await closeButton.isVisible()) {
+    await closeButton.click();
+  }
 }
 
 async function selectDateRangePreset(page, presetLabel) {
@@ -61,7 +65,7 @@ async function selectCustomDateRangeSpanMonths(page, monthsSpan) {
   const leftPanel = page.locator('.ant-picker-panel').nth(0);
   const rightPanel = page.locator('.ant-picker-panel').nth(1);
   const leftPrevButton = leftPanel.locator('.ant-picker-header-prev-btn');
-  const rightPrevButton = rightPanel.locator('.ant-picker-header-prev-btn');
+  const rightNextButton = rightPanel.locator('.ant-picker-header-next-btn');
 
   const monthsBack = monthsSpan - 1;
   for (let i = 0; i < monthsBack; i++) {
@@ -69,13 +73,15 @@ async function selectCustomDateRangeSpanMonths(page, monthsSpan) {
     await page.waitForTimeout(200);
   }
 
-  await leftPanel.getByText('1', { exact: true }).first().click();
+  await leftPanel.getByRole('cell', { name: '1', exact: true }).first().click();
   await page.waitForTimeout(300);
 
-  await rightPrevButton.click({ force: true });
-  await page.waitForTimeout(200);
+  for (let i = 0; i < monthsBack; i++) {
+    await rightNextButton.click({ force: true });
+    await page.waitForTimeout(200);
+  }
 
-  await rightPanel.getByText(endDay, { exact: true }).first().click();
+  await rightPanel.getByRole('cell', { name: endDay, exact: true }).first().click();
   await page.locator('.ant-picker-footer').getByRole('button', { name: 'Done' }).click({ force: true });
   await page.waitForTimeout(2000);
 }
@@ -92,28 +98,32 @@ async function selectCustomDateRangeOneYearFromToday(page) {
   await page.getByText('Custom Range').click();
   await page.waitForTimeout(300);
 
-  // Ant Design RangePicker: first panel = left (start), second panel = right (end)
+  // Picker opens with left=current month, right=next month.
+  // Go left back 11 months → left shows start month (1 year ago), right shows start month + 1.
   const leftPanel = page.locator('.ant-picker-panel').nth(0);
   const rightPanel = page.locator('.ant-picker-panel').nth(1);
   const leftPrevButton = leftPanel.locator('.ant-picker-header-prev-btn');
-  const rightPrevButton = rightPanel.locator('.ant-picker-header-prev-btn');
+  const rightNextButton = rightPanel.locator('.ant-picker-header-next-btn');
 
-  // Left panel: go back 12 months so it shows start month (1 year ago)
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 11; i++) {
     await leftPrevButton.click();
     await page.waitForTimeout(200);
   }
 
-  // Select start date (1 year ago) in left panel
-  await leftPanel.getByText(startDay, { exact: true }).first().click();
+  // Click start day in left panel
+  await leftPanel.getByRole('cell', { name: startDay, exact: true }).first().click();
   await page.waitForTimeout(300);
 
-  // Right panel: when opened it often shows next month; go back once to show current month (End = today)
-  await rightPrevButton.click({ force: true });
-  await page.waitForTimeout(200);
+  // Advance right panel forward until it shows the current month (today's month).
+  // After picking start the right panel is on start month + 1; we need to go forward
+  // (12 - 1) = 11 months to land on today's month.
+  for (let i = 0; i < 11; i++) {
+    await rightNextButton.click({ force: true });
+    await page.waitForTimeout(200);
+  }
 
-  // Select end date (today) in right panel
-  await rightPanel.getByText(endDay, { exact: true }).first().click();
+  // Click end day (today) in right panel
+  await rightPanel.getByRole('cell', { name: endDay, exact: true }).first().click();
   await page.locator('.ant-picker-footer').getByRole('button', { name: 'Done' }).click({ force: true });
   await page.waitForTimeout(2000);
 }
@@ -270,17 +280,19 @@ test('CR-01: Download Candidate Report for Last Week @smoke @report', async ({ p
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Last Week');
 
-  // Assert table has loaded with at least one result (candidate names/counts may vary)
+
   await expect(page.getByRole('paragraph')).toContainText(/Showing \d+ to \d+ of \d+ results/);
   await expect(page.getByRole('main')).toContainText('Name'); // table header present
-  // Ant Design Table adds a hidden .ant-table-measure-row; assert a real data row is visible
   await expect(page.getByRole('main').locator('table tbody tr.ant-table-row').first()).toBeVisible({ timeout: 10000 });
+
 
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -292,6 +304,12 @@ test('CR-02: Candidates report page shows Start date and Export button @report',
   await expect(page.getByRole('textbox', { name: 'Start date' })).toBeVisible();
   const exportBtn = page.getByTestId('export-candidates-button');
   await expect(exportBtn).toBeVisible();
+  await expect(exportBtn).toBeEnabled();
+
+  await exportBtn.click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
+  await expect(exportBtn).toBeVisible();
 });
 
 test('CR-03: Export candidates triggers download and success message @report', async ({ page }) => {
@@ -300,8 +318,10 @@ test('CR-03: Export candidates triggers download and success message @report', a
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText('candidates exported successfully');
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
@@ -313,8 +333,10 @@ test('CR-04: Download Candidate Report for Last Month @report', async ({ page })
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText('candidates exported successfully');
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -348,11 +370,13 @@ test('CR-05: First candidate row data on Candidates page matches downloaded repo
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
   const suggestedName = download.suggestedFilename() || 'candidates-export.xlsx';
   const downloadPath = testInfo.outputPath(suggestedName);
   await download.saveAs(downloadPath);
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
 
   const fileData = getCandidateRowDataFromFile(downloadPath, candidateName);
   expect(Object.keys(fileData).length).toBeGreaterThan(0);
@@ -409,8 +433,10 @@ test('CR-06: Download Candidate Report for Today @report', async ({ page }) => {
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await exportBtn.click({ force: true });
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -436,8 +462,10 @@ test('CR-07: Download Candidate Report for Yesterday @report', async ({ page }) 
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await exportBtn.click({ force: true });
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -462,8 +490,10 @@ test('CR-08: Download Candidate Report for This Week @report', async ({ page }) 
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await exportBtn.click({ force: true });
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -488,8 +518,10 @@ test('CR-09: Download Candidate Report for This Month @report', async ({ page })
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await exportBtn.click({ force: true });
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -504,8 +536,10 @@ test('CR-10: Download Candidate Report for Custom Range @report', async ({ page 
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText('candidates exported successfully');
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -519,8 +553,10 @@ test('CR-11: Download Candidate Report for 6 months @report', async ({ page }) =
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText(/\d+ candidates exported successfully/);
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();
@@ -534,8 +570,10 @@ test('CR-12: Download Candidate Report for 1 year @report', async ({ page }) => 
   const downloadPromise = page.waitForEvent('download');
   const exportStartTime = Date.now();
   await page.getByTestId('export-candidates-button').click();
+  await expect(page.getByText('Export Candidates', { exact: true })).toBeVisible();
+  await page.locator(`span:has-text("Export Now")`).click();
   const download = await downloadPromise;
-  await expect(page.locator('body')).toContainText('candidates exported successfully');
+  await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
   const exportTimeMs = Date.now() - exportStartTime;
   console.log(`Export and download completed in ${exportTimeMs} ms (${(exportTimeMs / 1000).toFixed(2)} s)`);
   expect(download.suggestedFilename()).toBeTruthy();

@@ -3,8 +3,8 @@ const { test, expect } = require('@playwright/test');
 const CLIENT_NAME = 'Growexx';
 const JOB_TITLE = 'Mern Developer';
 const RESUME = 'data/rajKashyap.pdf';
-const OFFER_LETTER_1 = 'data/offerLetter.pdf';
-const OFFER_LETTER_2 = 'data/offerLetter2.pdf';
+const OFFER_LETTER_1 = 'data/Offer Letter 1.pdf';
+const OFFER_LETTER_2 = 'data/Offer Letter 2.pdf';
 const FIRST_NAME = 'Raj';
 //const FIRST_NAME = 'Umesh';
 const EMAIL = 'rajkashyap@gmail.com';
@@ -283,6 +283,47 @@ async function openYopmailAndCheckInbox(context) {
     await yopmailPage.frameLocator('#ifmail').getByRole('link', { name: 'Document Upload Portal' }).click();
     return await popupPromise;
 }
+
+
+async function openYopmailAndClickOnOfferLetter(page) {
+    const yopmailPage = await page.context().newPage();
+    await yopmailPage.goto('https://yopmail.com/');
+    await yopmailPage.getByRole('textbox', { name: 'Login' }).fill(`${EMAIL_PREFIX}@yopmail.com`);
+    await yopmailPage.getByTitle('Check Inbox @yopmail.com').click();
+    await yopmailPage.locator('iframe[name="ifinbox"]').waitFor({ state: 'attached', timeout: 10000 });
+    const inboxFrame = yopmailPage.locator('iframe[name="ifinbox"]').contentFrame();
+
+    await expect(inboxFrame.getByRole('button', { name: /info@hirin\.ai Growexx: Offer Letter/ }).first()).toBeVisible({ timeout: 15000 });
+    await inboxFrame.getByRole('button', { name: /info@hirin\.ai Growexx: Offer Letter/ }).first().click();
+    await expect(
+        yopmailPage.locator('iframe[name="ifmail"]').contentFrame().getByRole('banner')
+    ).toContainText('Growexx: Offer Letter for Mern Developer');
+    await yopmailPage.waitForTimeout(4000);
+
+    const popupPromise = yopmailPage.waitForEvent('popup');
+    await yopmailPage.frameLocator('#ifmail').getByRole('link', { name: 'Accept Offer' }).click();
+    return await popupPromise;
+}
+
+async function drawSignature(page, canvasLocator) {
+    const box = await canvasLocator.boundingBox();
+  
+    const points = [
+      [20, 40],
+      [80, 70],
+      [140, 30],
+      [200, 80]
+    ];
+  
+    await page.mouse.move(box.x + points[0][0], box.y + points[0][1]);
+    await page.mouse.down();
+  
+    for (const [x, y] of points.slice(1)) {
+      await page.mouse.move(box.x + x, box.y + y);
+    }
+  
+    await page.mouse.up();
+  }
 
 
 function jobsTableCandidateName(page) {
@@ -856,10 +897,95 @@ test('TC-OM-31 : Validate Offer Released stage card appears in Candidate by Stag
     await expect(page.getByText('Offer Released', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-32 : Validate clicking Offer Released stage card filters candidate listing', async ({ page }) => {
+test('TC-OM-32 : Release the offer letter for the candidate',{timeout: 10000}, async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Release Pending')).toBeVisible();
+    await page.setInputFiles('input[type="file"]', OFFER_LETTER_1);
+    await page.waitForTimeout(3000);
+    await expect(page.locator(`span:has-text("Offer Letter 1.pdf")`)).toBeVisible();
+    await expect(page.locator(`span:has-text("Release Offer")`)).toBeEnabled();
+    await page.locator(`span:has-text("Release Offer")`).click();
+    await expect(page.locator('body')).toContainText('Offer released successfully');
+});
+
+test('TC-OM-33 : Validate clicking Offer Released stage card filters candidate listing', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Released', { exact: true }).first()).toBeVisible();
     await page.getByText('Offer Released', { exact: true }).first().click();
     await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+});
+
+test('TC-OM-34 : Validate stage filter dropdown shows Offer Released option',{timeout: 10000}, async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await page.getByText('Candidates', { exact: true }).first().click();
+   // await page.getByRole('img', { name: 'close' }).click();
+   await page.waitForTimeout(3000);
+    await page.getByRole('img', { name: 'sort' }).click();
+    await page.getByRole('menu').getByText('Current Stage', { exact: true }).click();
+    await page.getByRole('textbox', { name: 'Search...' }).click();
+    await page.getByRole('textbox', { name: 'Search...' }).fill('Offer Released');
+    await expect(page.locator('.ant-cascader-menu-item', {hasText: 'Offer Released'})).toBeVisible();
+    await page.locator(`span:has-text("Stages")`).click();
+    await page.getByRole('textbox', { name: 'Search...' }).click();
+    await page.getByRole('textbox', { name: 'Search...' }).fill('Offer Released');
+    await expect(page.locator('.ant-cascader-menu-item', {hasText: 'Offer Released'})).toBeVisible();
+});
+
+// HIR - 4047 //
+test('TC-OM-35 : Verify navigation to Offer tab from Candidate Details', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Acceptance Pending')).toBeVisible();
+    await expect(page.getByText('Offer', { exact: true }).first()).toBeVisible();
+});
+
+test('TC-OM-36 : Verify Offer tab loads candidate offer information', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Acceptance Pending')).toBeVisible();
+    const details = page.getByTestId('candidate-details');
+    await expect(details.getByRole('heading', { name: 'Last Sent Offer Letters' })).toBeVisible();
+    const sentByLine = details.getByText(/This document was sent by/);
+    await expect(sentByLine).toBeVisible();
+    await expect(sentByLine).toContainText('Super Admin');
+});
+
+test.only('TC-OM-37 : Verify Accepted status display with green indicator', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    const offerAcceptPopup = await openYopmailAndClickOnOfferLetter(page);
+    const canvas1 = offerAcceptPopup.locator('canvas.signature-canvas').first();
+    await drawSignature(offerAcceptPopup, canvas1);
+    const canvas2 = page.locator('canvas.signature-canvas').nth(1);
+    await canvas2.scrollIntoViewIfNeeded();
+    await drawSignature(offerAcceptPopup, canvas2);
+    await offerAcceptPopup.getByRole('button', { name: 'Accept offer' }).scrollIntoViewIfNeeded();
+    await waitForTimeout(10000);
+    await expect(offerAcceptPopup.getByRole('button', { name: 'Accept offer' })).toBeEnabled();
 });

@@ -9,7 +9,9 @@
 #   OUTLOOK_EMAIL     same as OUTLOOK_EMAIL in .env
 #   OUTLOOK_PASSWORD  same as OUTLOOK_PASSWORD in .env
 # Microsoft 365 / Outlook SMTP: smtp.office365.com:587 + STARTTLS (see email step).
-# If secrets are missing, the email step fails softly (continue-on-error).
+# If the HTML report is missing, a small stub ZIP is still attached so this step always runs
+# (previously the email was skipped whenever playwright-report/index.html was absent).
+# If secrets are missing or SMTP is blocked for the mailbox, the email step fails softly (continue-on-error).
 name: Smoke tests (scheduled)
 
 on:
@@ -55,22 +57,29 @@ jobs:
         id: zip_report
         if: always() && !cancelled()
         run: |
+          rm -f playwright-smoke-report.zip
           if [ -d playwright-report ] && [ -f playwright-report/index.html ]; then
-            zip -r playwright-smoke-report.zip playwright-report
-            echo "zip_created=true" >> "$GITHUB_OUTPUT"
+            zip -r -q playwright-smoke-report.zip playwright-report
+            echo "Packed Playwright HTML report for email."
           else
-            echo "No HTML report to zip (playwright-report/index.html missing)."
-            echo "zip_created=false" >> "$GITHUB_OUTPUT"
+            echo "No HTML report (playwright-report/index.html missing); attaching stub ZIP so email still sends."
+            mkdir -p .smoke-email-stub
+            {
+              echo "No Playwright HTML report was produced for this run (early failure or reporter did not write playwright-report/index.html)."
+              echo "Open the workflow run below for logs and the uploaded artifact if present."
+            } > .smoke-email-stub/README.txt
+            zip -r -q playwright-smoke-report.zip .smoke-email-stub
           fi
 
       - name: Email Playwright report
-        if: always() && !cancelled() && steps.zip_report.outputs.zip_created == 'true'
+        if: always() && !cancelled()
         continue-on-error: true
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.office365.com
           server_port: 587
           secure: false
+          ignore_cert: true
           username: ${{ secrets.OUTLOOK_EMAIL }}
           password: ${{ secrets.OUTLOOK_PASSWORD }}
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} — ${{ github.repository }} #${{ github.run_number }}'
@@ -79,7 +88,7 @@ jobs:
           body: |
             Scheduled smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
-            Open the attached ZIP, extract it, and open playwright-report/index.html in a browser for the full HTML report.
+            Attachment: full HTML report (playwright-report/) when available; otherwise a README-only stub ZIP.
 
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           attachments: playwright-smoke-report.zip

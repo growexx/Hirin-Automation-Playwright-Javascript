@@ -757,7 +757,7 @@ test('TC-OM-04 : Test for proper error messaging when required fields are missin
 
 });
 
-test.only('TC-OM-05 : Create a new job with Offer Release workflow @Stage', async ({ page }) => {
+test('TC-OM-05 : Create a new job with Offer Release workflow @Stage', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await completeOfferReleaseWorkflow(page);
@@ -1499,7 +1499,7 @@ test('TC-OM-44 : Verify no signed document shown for declined candidate', async 
 
 // HIR - 3922 //
 
-test.only('TC-OM-45 : Verify File Size Validation (>10MB)Verify File Size Validation (>10MB)',{timeout: 180000} async ({ page }) => {
+test('TC-OM-45 : Verify File Size Validation (>10MB)Verify File Size Validation (>10MB)',{timeout: 180000} async ({ page }) => {
     // await loginAndNavigateToCreateJob(page);
     // await clickOnTheJob(page);
     // await page.waitForTimeout(3000);

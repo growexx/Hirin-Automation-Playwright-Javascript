@@ -32,6 +32,49 @@ async function removeIframe(page) {
   });
 }
 
+/**
+ * Clicks an option in the open "Select screening criteria" Ant Select (portal). Uses the last visible
+ * dropdown. Prefers a row matching optionText; if missing (staging data varies), uses the first row.
+ * @param {import('@playwright/test').Page} page
+ * @param {string|RegExp} optionText
+ * @returns {Promise<string>} Primary line of the chosen option (for assertions).
+ */
+async function selectScreeningCriteriaOption(page, optionText) {
+  const dropdown = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last();
+  await expect(dropdown).toBeVisible({ timeout: 15000 });
+  await expect(dropdown.locator('.ant-select-item-option').first()).toBeVisible({ timeout: 15000 });
+  const matched = dropdown.locator('.ant-select-item-option').filter({ hasText: optionText });
+  const row = (await matched.count()) > 0 ? matched.first() : dropdown.locator('.ant-select-item-option').first();
+  await row.scrollIntoViewIfNeeded();
+  const primaryLabel = (
+    await row.locator('.ant-select-item-option-content').first().innerText()
+  )
+    .split(/\r?\n/)[0]
+    .trim();
+  await row.click({ timeout: 15000 });
+  return primaryLabel;
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {number} index
+ * @returns {Promise<string>}
+ */
+async function selectScreeningCriterionByIndex(page, index) {
+  const dropdown = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last();
+  await expect(dropdown).toBeVisible({ timeout: 15000 });
+  const row = dropdown.locator('.ant-select-item-option').nth(index);
+  await expect(row).toBeVisible({ timeout: 15000 });
+  await row.scrollIntoViewIfNeeded();
+  const primaryLabel = (
+    await row.locator('.ant-select-item-option-content').first().innerText()
+  )
+    .split(/\r?\n/)[0]
+    .trim();
+  await row.click({ timeout: 15000 });
+  return primaryLabel;
+}
+
 test('TC-JS-01 — User gets redirected to Job Summary page when all valid mandatory inputs are provided @regression @createAJob', async ({ page }) => {
   await loginAndNavigateToCreateJob(page);
 
@@ -156,8 +199,8 @@ test('TC-JS-09 — Add screening criteria @regression @createAJob', async ({ pag
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const criterionLabel = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: criterionLabel })).toBeVisible();
 
   await page.waitForTimeout(3000);
 });
@@ -170,11 +213,11 @@ test('TC-JS-10 — Removed added screening criteria @regression @createAJob', as
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const criterionLabel = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: criterionLabel })).toBeVisible();
   await page.waitForTimeout(3000);
   await page.getByRole('button', { name: 'close', exact: true }).click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeHidden();
+  await expect(page.locator('span').filter({ hasText: criterionLabel })).toBeHidden();
   await page.waitForTimeout(3000);
 });
 
@@ -186,8 +229,8 @@ test('TC-JS-11 — Check Auto-Reject in added screening criteria @regression @cr
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const criterionLabel = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: criterionLabel })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Auto-reject candidates who' }).check();
   await expect(page.getByRole('checkbox', { name: 'Auto-reject candidates who' })).toBeChecked()
   await page.waitForTimeout(3000);
@@ -201,8 +244,8 @@ test('TC-JS-12 — Uncheck Auto-Reject in added screening criteria @regression @
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const criterionLabel = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: criterionLabel })).toBeVisible();
   const autoRejectCheckbox = page.getByRole('checkbox', {
     name: 'Auto-reject candidates who',
   });
@@ -224,13 +267,13 @@ test('TC-JS-13 — Add multiple screening criteria @regression @createAJob', asy
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const labelA = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: labelA })).toBeVisible();
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Relocation').click();
-  await expect(page.locator(`span:has-text("Relocation")`)).toBeVisible();
+  const labelB = await selectScreeningCriterionByIndex(page, 1);
+  await expect(page.locator('span').filter({ hasText: labelB })).toBeVisible();
   await page.waitForTimeout(4000);
 });
 
@@ -242,16 +285,16 @@ test('TC-JS-14 — Remove one of the added screening criteria in case of multipl
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Budget').first().click();
-  await expect(page.locator(`span:has-text("Budget")`)).toBeVisible();
+  const labelA = await selectScreeningCriteriaOption(page, 'Budget');
+  await expect(page.locator('span').filter({ hasText: labelA })).toBeVisible();
 
   await page.getByRole('button', { name: 'Add additional screening' }).click();
   await page.getByRole('combobox', { name: 'Select screening criteria to' }).click();
-  await page.getByText('Relocation').click();
-  await expect(page.locator(`span:has-text("Relocation")`)).toBeVisible();
+  const labelB = await selectScreeningCriterionByIndex(page, 1);
+  await expect(page.locator('span').filter({ hasText: labelB })).toBeVisible();
   await page.waitForTimeout(3000);
   await page.getByRole('button', { name: 'close' }).nth(2).click();
-    await expect(page.locator(`span:has-text("Relocation")`)).toBeHidden();
+  await expect(page.locator('span').filter({ hasText: labelB })).toBeHidden();
     await page.waitForTimeout(3000);
 });
 

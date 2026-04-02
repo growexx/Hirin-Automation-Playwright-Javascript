@@ -276,7 +276,7 @@ function getCandidateRowDataFromFile(filePath, candidateName) {
   return {};
 }
 
-test('CR-01: Download Candidate Report for Last Week @smoke @report', async ({ page }) => {
+test('CR-01: Download Candidate Report for Last Week @smoke @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Last Week');
 
@@ -298,7 +298,7 @@ test('CR-01: Download Candidate Report for Last Week @smoke @report', async ({ p
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-02: Candidates report page shows Start date and Export button @report', async ({ page }) => {
+test('CR-02: Candidates report page shows Start date and Export button @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
 
   await expect(page.getByRole('textbox', { name: 'Start date' })).toBeVisible();
@@ -312,7 +312,7 @@ test('CR-02: Candidates report page shows Start date and Export button @report',
   await expect(exportBtn).toBeVisible();
 });
 
-test('CR-03: Export candidates triggers download and success message @report', async ({ page }) => {
+test('CR-03: Export candidates triggers download and success message @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Last Week');
 
@@ -325,7 +325,7 @@ test('CR-03: Export candidates triggers download and success message @report', a
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-04: Download Candidate Report for Last Month @report', async ({ page }) => {
+test('CR-04: Download Candidate Report for Last Month @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Last Month');
   await page.waitForTimeout(2000);
@@ -342,7 +342,7 @@ test('CR-04: Download Candidate Report for Last Month @report', async ({ page })
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-05: First candidate row data on Candidates page matches downloaded report (Last Week) @report', async ({
+test('CR-05: First candidate row data on Candidates page matches downloaded report (Last Week) @regression @report', async ({
   page,
 }, testInfo) => {
   await loginAndNavigateToCandidatesReport(page);
@@ -415,7 +415,7 @@ test('CR-05: First candidate row data on Candidates page matches downloaded repo
 });
 
 // No data found for today - exit on "No data found" (same handling as CR-07); else run export
-test('CR-06: Download Candidate Report for Today @report', async ({ page }) => {
+test('CR-06: Download Candidate Report for Today @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Today');
   await page.waitForTimeout(2000);
@@ -443,7 +443,7 @@ test('CR-06: Download Candidate Report for Today @report', async ({ page }) => {
 });
 
 // No data found for yesterday - exit on "No data found" (same handling as CR-06); else run export
-test('CR-07: Download Candidate Report for Yesterday @report', async ({ page }) => {
+test('CR-07: Download Candidate Report for Yesterday @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'Yesterday');
   await page.waitForTimeout(2000);
@@ -472,7 +472,7 @@ test('CR-07: Download Candidate Report for Yesterday @report', async ({ page }) 
 });
 
 // No data found for this week - exit on "No data found" (same handling as CR-07); else run export
-test('CR-08: Download Candidate Report for This Week @report', async ({ page }) => {
+test('CR-08: Download Candidate Report for This Week @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'This Week');
   await page.waitForTimeout(2000);
@@ -500,7 +500,7 @@ test('CR-08: Download Candidate Report for This Week @report', async ({ page }) 
 });
 
 // No data found for this month - exit on "No data found" (same handling as CR-07); else run export
-test('CR-09: Download Candidate Report for This Month @report', async ({ page }) => {
+test('CR-09: Download Candidate Report for This Month @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectDateRangePreset(page, 'This Month');
   await page.waitForTimeout(2000);
@@ -528,7 +528,7 @@ test('CR-09: Download Candidate Report for This Month @report', async ({ page })
 });
 
 
-test('CR-10: Download Candidate Report for Custom Range @report', async ({ page }) => {
+test('CR-10: Download Candidate Report for Custom Range @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectCustomDateRange(page, '12', '28');
   await page.waitForTimeout(1000);
@@ -545,7 +545,7 @@ test('CR-10: Download Candidate Report for Custom Range @report', async ({ page 
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-11: Download Candidate Report for 6 months @report', async ({ page }) => {
+test('CR-11: Download Candidate Report for 6 months @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectCustomDateRangeSpanMonths(page, 6);
   await page.waitForTimeout(2000);
@@ -562,7 +562,7 @@ test('CR-11: Download Candidate Report for 6 months @report', async ({ page }) =
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-12: Download Candidate Report for 1 year @report', async ({ page }) => {
+test('CR-12: Download Candidate Report for 1 year @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await selectCustomDateRangeOneYearFromToday(page);
   await page.waitForTimeout(1000);
@@ -579,7 +579,7 @@ test('CR-12: Download Candidate Report for 1 year @report', async ({ page }) => 
   expect(download.suggestedFilename()).toBeTruthy();
 });
 
-test('CR-13: Date range picker shows all preset options @report', async ({ page }) => {
+test('CR-13: Date range picker shows all preset options @regression @report', async ({ page }) => {
   await loginAndNavigateToCandidatesReport(page);
   await page.getByRole('textbox', { name: 'Start date' }).click();
   await page.waitForTimeout(500);

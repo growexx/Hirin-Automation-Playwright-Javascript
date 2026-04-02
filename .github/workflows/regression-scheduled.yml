@@ -1,5 +1,12 @@
 # Runs @regression tests once per week. GitHub Actions cron is UTC only.
 # Default: Fridays 05:00 UTC. For India (IST) Friday 10:30, use: cron: '0 5 * * 5' → adjust as needed.
+#
+# Email report: Gmail SMTP (smtp.gmail.com:465). Same secrets as smoke-scheduled.yml — use Repository secrets only.
+# Settings → Secrets and variables → Actions → New repository secret:
+#   GMAIL_USERNAME      test.addagames1@gmail.com
+#   GMAIL_APP_PASSWORD  account password, or Google “App password” if 2-Step Verification is on
+# If the HTML report is missing, a small stub ZIP is still attached so this step always runs.
+# If secrets are missing or SMTP is blocked for the mailbox, the email step fails softly (continue-on-error).
 name: Regression tests (weekly)
 
 on:
@@ -27,9 +34,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run regression tests
+        id: regression_tests
         env:
           CI: true
-        run: npx playwright test --grep '@regression' --project=chromium
+          FORCE_COLOR: '0'
+        run: npx playwright test --grep '@regression' --project=chromium --reporter=list --reporter=html
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -37,3 +46,42 @@ jobs:
           name: playwright-regression-report
           path: playwright-report/
           retention-days: 30
+
+      - name: Zip Playwright HTML report
+        id: zip_report
+        if: always() && !cancelled()
+        run: |
+          rm -f playwright-regression-report.zip
+          if [ -d playwright-report ] && [ -f playwright-report/index.html ]; then
+            zip -r -q playwright-regression-report.zip playwright-report
+            echo "Packed Playwright HTML report for email."
+          else
+            echo "No HTML report (playwright-report/index.html missing); attaching stub ZIP so email still sends."
+            mkdir -p .regression-email-stub
+            {
+              echo "No Playwright HTML report was produced for this run (early failure or reporter did not write playwright-report/index.html)."
+              echo "Open the workflow run below for logs and the uploaded artifact if present."
+            } > .regression-email-stub/README.txt
+            zip -r -q playwright-regression-report.zip .regression-email-stub
+          fi
+
+      - name: Email Playwright report
+        if: always() && !cancelled()
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: '[Regression] ${{ steps.regression_tests.outcome }} — ${{ github.repository }} #${{ github.run_number }}'
+          to: ${{ secrets.GMAIL_USERNAME }}
+          from: ${{ secrets.GMAIL_USERNAME }}
+          body: |
+            Scheduled regression tests finished with outcome: ${{ steps.regression_tests.outcome }}
+
+            Attachment: full HTML report (playwright-report/) when available; otherwise a README-only stub ZIP.
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          attachments: playwright-regression-report.zip

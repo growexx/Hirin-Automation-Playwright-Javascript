@@ -1,14 +1,15 @@
 # Runs @smoke tests on a schedule. GitHub cron uses UTC only (no one-shot "tomorrow").
-# - 10:00 UTC daily → cron below. For India (IST) 10:00, use: cron: '30 4 * * *' (04:30 UTC).
-# First run: next calendar trigger after you push this file (e.g. if you push before 10:00 UTC, same day).
+# Schedule: Monday–Thursday only (day-of-week 1–4). Time: 05:00 UTC (cron below).
+# For India (IST) ~10:30 on those weekdays, use e.g. cron: '30 5 * * 1-4' and adjust as needed.
+# First run: next calendar trigger after you push (next Mon–Thu after 05:00 UTC).
 #
 # Live test names in the Actions log: enabled via --reporter=line (updates as each test runs).
 #
-# Email report (optional): same mailbox as local .env (OUTLOOK_EMAIL / OUTLOOK_PASSWORD).
-# GitHub cannot read your machine’s .env — add these Repository secrets (same values as .env):
-#   OUTLOOK_EMAIL     same as OUTLOOK_EMAIL in .env
-#   OUTLOOK_PASSWORD  same as OUTLOOK_PASSWORD in .env
-# Microsoft 365 / Outlook SMTP: smtp.office365.com:587 + STARTTLS (see email step).
+# Email report: Gmail SMTP (smtp.gmail.com:465). Do not put passwords in this file — use Repository secrets only.
+# Settings → Secrets and variables → Actions → New repository secret:
+#   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From)
+#   GMAIL_APP_PASSWORD  account password, or Google “App password” if 2-Step Verification is on
+#   OUTLOOK_EMAIL       bikash.mazumder@growexx.com  (To — report recipient)
 # If the HTML report is missing, a small stub ZIP is still attached so this step always runs
 # (previously the email was skipped whenever playwright-report/index.html was absent).
 # If secrets are missing or SMTP is blocked for the mailbox, the email step fails softly (continue-on-error).
@@ -16,7 +17,8 @@ name: Smoke tests (scheduled)
 
 on:
   schedule:
-    - cron: '0 5 * * *'
+    # Mon–Thu only (1–4); 05:00 UTC
+    - cron: '0 5 * * 1-4'
   workflow_dispatch:
 
 jobs:
@@ -76,15 +78,14 @@ jobs:
         continue-on-error: true
         uses: dawidd6/action-send-mail@v4
         with:
-          server_address: smtp.office365.com
-          server_port: 587
-          secure: false
-          ignore_cert: true
-          username: ${{ secrets.OUTLOOK_EMAIL }}
-          password: ${{ secrets.OUTLOOK_PASSWORD }}
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} — ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.OUTLOOK_EMAIL }}
+          from: ${{ secrets.GMAIL_USERNAME }}
           body: |
             Scheduled smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 

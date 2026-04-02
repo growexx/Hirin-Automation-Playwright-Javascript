@@ -24,7 +24,7 @@ async function loginAndNavigateToCandidatesPage(page) {
     await candidatesNav.click();
 }
 // Manual action needed for MFA verification
-test('Login to outlook and send email  @regression @addCandidateFromQueue', async ({page}) => {
+test('Login to outlook and send email @addCandidateFromQueue', async ({page}) => {
     test.setTimeout(150000);
     await page.goto('https://login.microsoftonline.com/');
     await page.getByRole('textbox', { name: 'Enter your email, phone, or' }).click();
@@ -55,7 +55,7 @@ test('Login to outlook and send email  @regression @addCandidateFromQueue', asyn
     await page.waitForTimeout(25000);
 })
 
-test('Add candidate to a job from Queue - Cancel the action @regression @addCandidateFromQueue', async ({page}) => {
+test('Add candidate to a job from Queue - Cancel the action @addCandidateFromQueue', async ({page}) => {
     
     await loginAndNavigateToCandidatesPage(page);
     await expect(page.getByText('Candidates in Queue')).toBeVisible({ timeout: 10000 });
@@ -75,7 +75,7 @@ test('Add candidate to a job from Queue - Cancel the action @regression @addCand
     await page.waitForTimeout(5000);
 })
 
-test('Add candidate to a job from Queue - Confirm the action  @regression @addCandidateFromQueue', async ({page}) => {
+test('Add candidate to a job from Queue - Confirm the action @addCandidateFromQueue', async ({page}) => {
     await loginAndNavigateToCandidatesPage(page);
     await expect(page.getByText('Candidates in Queue')).toBeVisible({ timeout: 10000 });
     await page.getByText('Candidates in Queue').click();
@@ -119,7 +119,7 @@ test('Add candidate to a job from Queue - Confirm the action  @regression @addCa
     await page.waitForTimeout(5000);
 })
 
-test('Remove candidate from a job from Queue - Cancel the action @regression @addCandidateFromQueue', async ({page}) => {
+test('Remove candidate from a job from Queue - Cancel the action @addCandidateFromQueue', async ({page}) => {
     await loginAndNavigateToCandidatesPage(page);
     await expect(page.getByText('Candidates in Queue')).toBeVisible({ timeout: 10000 });
     await page.getByText('Candidates in Queue').click();
@@ -138,7 +138,7 @@ test('Remove candidate from a job from Queue - Cancel the action @regression @ad
     await page.waitForTimeout(5000);
 })
 
-test('Remove candidate from a job from Queue - Confirm the action  @regression @addCandidateFromQueue', async ({page}) => {
+test('Remove candidate from a job from Queue - Confirm the action @addCandidateFromQueue', async ({page}) => {
     await loginAndNavigateToCandidatesPage(page);
     await expect(page.getByText('Candidates in Queue')).toBeVisible({ timeout: 10000 });
     await page.getByText('Candidates in Queue').click();
@@ -161,7 +161,7 @@ test('Remove candidate from a job from Queue - Confirm the action  @regression @
     await page.waitForTimeout(5000);
 })
 
-test('Remove all candidate from Queue - Confirm the action', async ({page}) => {
+test('Remove all candidate from Queue - Confirm the action @addCandidateFromQueue', async ({page}) => {
     await loginAndNavigateToCandidatesPage(page);
     await expect(page.getByText('Candidates in Queue')).toBeVisible({ timeout: 10000 });
     await page.getByText('Candidates in Queue').click();

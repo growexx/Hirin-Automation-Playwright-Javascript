@@ -451,7 +451,7 @@ test('TC-CP-20 : Verify that if user searches for a job in the Careers Page usin
     await expect(noResultMessage).toBeVisible();
 })
 
-test.only('TC-CP-21 : Verify that if user clears the search box after searching for a job, all the jobs are displayed in the Careers Page @regression @careersPage', async ({ page }) => {
+test('TC-CP-21 : Verify that if user clears the search box after searching for a job, all the jobs are displayed in the Careers Page @regression @careersPage', async ({ page }) => {
     await loginAndNavigateToCareers(page);
     await expect(page.getByRole('switch').first()).toBeEnabled();
     await expect(page.getByText('Job Visibility', { exact: true })).toBeVisible();
@@ -472,7 +472,7 @@ test.only('TC-CP-21 : Verify that if user clears the search box after searching 
     await expect(allJobs).toHaveText('Product Owner');
 })
 
-test.only('TC-CP-22 : Verify that if the Enable Careers Page toggle button is on, then user is able to set the toggle to off for Job Visibility for the first job and the changes are reflected in the Careers Page Preview @regression @careersPage', async ({ page }) => {
+test('TC-CP-22 : Verify that if the Enable Careers Page toggle button is on, then user is able to set the toggle to off for Job Visibility for the first job and the changes are reflected in the Careers Page Preview @regression @careersPage', async ({ page }) => {
     await loginAndNavigateToCareers(page);
     await expect(page.getByRole('switch').first()).toBeEnabled();
     await expect(page.getByText('Job Visibility', { exact: true })).toBeVisible();
@@ -496,7 +496,7 @@ test.only('TC-CP-22 : Verify that if the Enable Careers Page toggle button is on
     await expect(firstJob).not.toBeVisible();
 })
 
-test.only('TC-CP-23 : Verify that if the Enable Careers Page toggle button is on, then user is able to set the toggle to on for Job Visibility for the first job and the changes are reflected in the Careers Page Preview @regression @careersPage', async ({ page }) => {
+test('TC-CP-23 : Verify that if the Enable Careers Page toggle button is on, then user is able to set the toggle to on for Job Visibility for the first job and the changes are reflected in the Careers Page Preview @regression @careersPage', async ({ page }) => {
     await loginAndNavigateToCareers(page);
     await expect(page.getByRole('switch').first()).toBeEnabled();
     await expect(page.getByText('Job Visibility', { exact: true })).toBeVisible();
@@ -607,7 +607,7 @@ test('TC-CP-27 : Verify that if user is able to view Details of a Job in Career 
     await expect(newPage.getByRole('heading', { name: 'About the Role' })).toBeVisible();
 });
 
-test.only('TC-CP-28 : Verify that if user tries to apply for a job that they have already applied for, an appropriate message is displayed @regression @careersPage', async ({ page }) => {
+test('TC-CP-28 : Verify that if user tries to apply for a job that they have already applied for, an appropriate message is displayed @regression @careersPage', async ({ page }) => {
     await loginAndNavigateToCareers(page);
     const newPage = await page.context().newPage();
     await newPage.goto('https://growexx-stg.hirin.ai/careers');

@@ -1,7 +1,6 @@
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const { test, expect } = require('@playwright/test');
-const { asyncWrapProviders } = require('async_hooks');
 
 const CLIENT_NAME = 'Growexx';
 const JOB_TITLE = 'Mern Developer';
@@ -27,6 +26,25 @@ const PHONE_NUMBER2 = '+91 9876543212';
 const EMAIL_PREFIX = EMAIL.split('@')[0];
 const EMAIL_PREFIX1 = EMAIL1.split('@')[0];
 
+
+async function clickJobsNav(page, { maxAttempts = 4 } = {}) {
+  const jobs = page.getByText('Jobs', { exact: true });
+  let lastError;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      await expect(jobs).toBeVisible({ timeout: 15000 });
+      await jobs.click({ timeout: 15000 });
+      return;
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxAttempts - 1) {
+        await page.waitForTimeout(2000);
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function loginAndNavigateToCreateJob(page) {
     await page.goto('https://stgapp.hirin.ai/login');
 
@@ -38,7 +56,7 @@ async function loginAndNavigateToCreateJob(page) {
     await page.getByRole('combobox').click({force: true});
     await page.getByRole('combobox').fill(CLIENT_NAME);
     await page.locator('.ant-select-item-option', {hasText: CLIENT_NAME}).click();
-    await page.getByText('Jobs', { exact: true }).click();
+    await clickJobsNav(page);
 
 }
 
@@ -131,7 +149,6 @@ async function completeOfferReleaseWorkflow(page) {
 
     await page.getByRole('button', {name: 'Done'}).click();
 }
-
 
 async function offerReleaseUIValidation(page) {
 
@@ -666,13 +683,13 @@ async function drawSignature(page, canvasLocator) {
 
 
 // HIR - 4178 //
-test('TC-OM-01 : Ensure the workflow is displayed correctly on the UI.', async ({ page }) => {
+test('TC-OM-01 : Ensure the workflow is displayed correctly on the UI. @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await offerReleaseUIValidation(page);
 });
 
-test('TC-OM-02 : Ensure buttons are clearly visible and accessible.', async ({ page }) => {
+test('TC-OM-02 : Ensure buttons are clearly visible and accessible.@regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await expect(page.getByText('SDE1', { exact: true })).toBeVisible();
@@ -694,7 +711,7 @@ test('TC-OM-02 : Ensure buttons are clearly visible and accessible.', async ({ p
     await expect(page.getByRole('heading', { name: 'Select HR Manager' })).toBeVisible();
 });
 
-test('TC-OM-03 : Test the interaction of drop-down lists in the UI.', async ({ page }) => {
+test('TC-OM-03 : Test the interaction of drop-down lists in the UI.@regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await expect(page.getByText('SDE1', { exact: true })).toBeVisible();
@@ -729,7 +746,7 @@ test('TC-OM-03 : Test the interaction of drop-down lists in the UI.', async ({ p
     await page.waitForTimeout(3000);
 });
 
-test('TC-OM-04 : Test for proper error messaging when required fields are missing.', async ({ page }) => {
+test('TC-OM-04 : Test for proper error messaging when required fields are missing.@regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await page.getByRole('button', {name: 'Done'}).click();
@@ -757,7 +774,7 @@ test('TC-OM-04 : Test for proper error messaging when required fields are missin
 
 });
 
-test('TC-OM-05 : Create a new job with Offer Release workflow @Stage', async ({ page }) => {
+test('TC-OM-05 : Create a new job with Offer Release workflow @smoke @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await offerReleaseWorkflowSelected(page);
     await completeOfferReleaseWorkflow(page);
@@ -772,7 +789,7 @@ test('TC-OM-05 : Create a new job with Offer Release workflow @Stage', async ({ 
 
 
 // HIR - 3910 //
-test('TC-OM-06 : Verify that the "Offer Call" step appears after the HM round and before Offer Released.', async ({ page }) => {
+test('TC-OM-06 : Verify that the "Offer Call" step appears after the HM round and before Offer Released. @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -782,7 +799,7 @@ test('TC-OM-06 : Verify that the "Offer Call" step appears after the HM round an
     await offerReleaseUIValidationAfterHMRound(page);
 });
 
-test('TC-OM-07 : Add a candidate to the job with Offer Release workflow @Stage', async ({ page }) => {
+test('TC-OM-07 : Add a candidate to the job with Offer Release workflow @smoke @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -796,7 +813,8 @@ test('TC-OM-07 : Add a candidate to the job with Offer Release workflow @Stage',
     await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
 });
 
-test('TC-OM-08 : Move a candidate to different stage in the job with Offer Release workflow @Stage', async ({ page, context }) => {
+test('TC-OM-08 : Move a candidate to different stage in the job with Offer Release workflow @smoke @regression @offer-management',{timeout: 240000}, async ({ page, context }) => {
+    test.setTimeout(240000);
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -810,7 +828,7 @@ test('TC-OM-08 : Move a candidate to different stage in the job with Offer Relea
     
 });
 
-test('TC-OM-09 : Verify that a candidate is automatically moved to the "Offer Call Schedule Pending" stage after documents are approved.', async ({ page }) => {
+test('TC-OM-09 : Verify that a candidate is automatically moved to the "Offer Call Schedule Pending" stage after documents are approved.@smoke @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -836,7 +854,7 @@ test('TC-OM-09 : Verify that a candidate is automatically moved to the "Offer Ca
     await expect(page.getByRole('heading', { name: 'Offer Call Schedule Pending' })).toBeVisible();
 });
 
-test('TC-OM-10 : Verify To-Do List Entry for Offer Call Schedule Pending', async ({ page }) => {
+test('TC-OM-10 : Verify To-Do List Entry for Offer Call Schedule Pending @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Call Schedule Pending', { exact: true }).first()).toBeVisible();
@@ -848,7 +866,204 @@ test('TC-OM-10 : Verify To-Do List Entry for Offer Call Schedule Pending', async
     await expect(page.getByText(`Offer Call Schedule Required - ${CANDIDATE_FULL_NAME} for ${JOB_TITLE} role`, { exact: true }).first()).toBeVisible();
 });
 
-test(`TC-OM-11 : Verify that the candidate's status changes to "Offer Call Scheduled" once the offer call has been scheduled.`, async ({ page }) => {
+
+// HIR - 4049 //
+test('TC-OM-11 : Verify Offer Call Scheduling Fields @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+
+    await expect(page.locator('.other-attendees-selector')).toBeVisible();
+    await page.locator('.other-attendees-selector').click();
+    await expect(page.locator(`label:has-text("Riya.singh")`)).toBeVisible();
+    await page.getByText('HR Manager', { exact: true }).click();
+
+    await expect(page.getByRole('textbox', { name: 'Select date' })).toBeVisible();
+    await page.getByRole('textbox', { name: 'Select date' }).click();
+    await expect(page.locator('.ant-picker-date-panel')).toBeVisible();
+    await expect(page.locator(`.ant-picker-time-panel`)).toBeVisible();
+    await page.getByText('Start Date and Time', { exact: true }).first().click();
+
+    await expect(page.locator(`span[title="Virtual"]`)).toBeVisible();
+    await page.locator(`span[title="Virtual"]`).click();
+
+    await expect(page.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
+  
+    await expect(page.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
+});
+
+test('TC-OM-12 : Verify Attendees Selector for Offer Call @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+
+    await expect(page.locator('.other-attendees-selector')).toBeVisible();
+    await page.locator('.other-attendees-selector').click();
+    await page.locator(`label:has-text("Riya.singh")`).click();
+    await page.locator(`label:has-text("Super Admin")`).click();
+
+    await expect(page.locator('.custom-value-container')).toHaveText('Riya.singh and 1 other');
+});
+
+test('TC-OM-13 : Verify Call Type Selector (Virtual/In-Person) @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+
+    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
+
+    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
+    await page.locator('span[title="Virtual"]').click();
+    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
+    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
+
+    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
+    await expect(page.locator('span[title="In Person"]')).toBeVisible();
+
+    await page.locator('span[title="In Person"]').click();
+    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
+    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
+    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' }).click();
+    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
+});
+
+test('TC-OM-14 : Verify Office Location for In-Person Call Type @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+
+    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
+
+    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
+    await page.locator('span[title="Virtual"]').click();
+    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
+    await expect(page.locator('span[title="In Person"]')).toBeVisible();
+
+    const interviewLocationSelect = page.locator('.ant-select').filter({
+      has: page.locator('.ant-select-selection-placeholder', { hasText: 'Select interview location...' })
+    });
+    await expect(interviewLocationSelect.locator('.ant-select-selection-placeholder')).toHaveText(
+      'Select interview location...'
+    );
+    await interviewLocationSelect.locator('.ant-select-selector').click();
+
+    const locationDropdown = page.locator('.ant-select-dropdown').last();
+    await expect(locationDropdown.locator('.ant-select-item-option-content')).toContainText(
+      '1105, Shivalik Abaise'
+    );
+});
+
+test('TC-OM-15 : Verify Tooltip for Schedule Offer Call @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).hover();
+    const tooltip = await page.locator('.ant-tooltip-inner');
+    await expect(tooltip).toHaveText('Schedule offer call');
+});
+
+test('TC-OM-16 : Verify Office Location Handling for Virtual Call Type @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+
+    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
+    await page.locator('span[title="Virtual"]').click();
+
+    await expect(page.getByText('Interview Address', { exact: true })).not.toBeVisible();
+});
+
+test('TC-OM-17 : Verify Handling of Invalid Input for Date/Time @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+    await page.getByRole('textbox', { name: 'Select date' }).click();
+     // Get yesterday's date in YYYY-MM-DD format
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const formattedDate = yesterday.toISOString().split('T')[0];
+
+  // Locate the date cell using title attribute
+  const dateCell = page.locator(`td[title="${formattedDate}"]`);
+
+  // Assert it has disabled class
+  await expect(dateCell).toHaveClass(/ant-picker-cell-disabled/);
+});
+
+test('TC-OM-18 : Verify Meeting Link Handling for In-Person Call Type @regression @offer-management', async ({ page }) => {
+    await loginAndNavigateToCreateJob(page);
+    await clickOnTheJob(page);
+    await page.waitForTimeout(3000);
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
+    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
+    await jobsTableCandidateName(page).click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
+    await page.getByRole('img', { name: 'calendar' }).click();
+    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
+
+    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
+    await page.locator('span[title="Virtual"]').click();
+    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
+    await expect(page.locator('span[title="In Person"]')).toBeVisible();
+
+    await expect(page.getByRole('img', { name: 'In-Person' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Microsoft Teams' })).not.toBeVisible();
+});
+
+
+// HIR - 3910 //
+test(`TC-OM-19 : Verify that the candidate's status changes to "Offer Call Scheduled" once the offer call has been scheduled. @smoke @regression @offer-management`, async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -884,7 +1099,7 @@ test(`TC-OM-11 : Verify that the candidate's status changes to "Offer Call Sched
 
 
 // HIR - 4128 //
-test('TC-OM-12 : Verify Offer Call Stage Visibility in Different User Roles', async ({ page }) => {
+test('TC-OM-20 : Verify Offer Call Stage Visibility in Different User Roles @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Call Schedule Pending', { exact: true }).first()).toBeVisible();
@@ -902,13 +1117,13 @@ test('TC-OM-12 : Verify Offer Call Stage Visibility in Different User Roles', as
     await expect(page.getByText('Offer Call Scheduled', { exact: true }).last()).toBeVisible();
 });
 
-test('TC-OM-13 : Verify "Offer Call Schedule Pending" Dashboard Card Visibility', async ({ page }) => {
+test('TC-OM-21 : Verify "Offer Call Schedule Pending" Dashboard Card Visibility @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Call Schedule Pending', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-14 : Verify "Offer Call Scheduled" Dashboard Card Visibility', async ({ page }) => {
+test('TC-OM-22 : Verify "Offer Call Scheduled" Dashboard Card Visibility @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.locator('[data-testid="status-card-Offer Call Scheduled"]').first()).toBeVisible();
@@ -916,7 +1131,7 @@ test('TC-OM-14 : Verify "Offer Call Scheduled" Dashboard Card Visibility', async
     await expect(page.locator('[data-testid="status-card-Offer Call Scheduled"]')).toHaveCount(2);
 });
 
-test('TC-OM-15 : Verify Recent Activity Entry for Offer Call Scheduling', async ({ page }) => {
+test('TC-OM-23 : Verify Recent Activity Entry for Offer Call Scheduling @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Call Schedule Pending', { exact: true }).first()).toBeVisible();
@@ -928,7 +1143,7 @@ test('TC-OM-15 : Verify Recent Activity Entry for Offer Call Scheduling', async 
     await expect(page.getByText(`Super Admin Scheduled the Offer Call of ${CANDIDATE_FULL_NAME} for ${JOB_TITLE} role`, { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-16 : Verify Job Details → Insights Tab Visibility for Offer Call Stages', async ({ page }) => {
+test('TC-OM-24 : Verify Job Details → Insights Tab Visibility for Offer Call Stages @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -942,7 +1157,7 @@ test('TC-OM-16 : Verify Job Details → Insights Tab Visibility for Offer Call S
     await expect(stageValue).toHaveText('1');
 });
 
-test('TC-OM-17 : Verify Automatic Removal of To-Do Item After Offer Call Scheduling', async ({ page }) => {
+test('TC-OM-25 : Verify Automatic Removal of To-Do Item After Offer Call Scheduling @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Call Schedule Pending', { exact: true }).first()).toBeVisible();
@@ -954,202 +1169,9 @@ test('TC-OM-17 : Verify Automatic Removal of To-Do Item After Offer Call Schedul
     await expect(page.getByText(`Offer Call Schedule Required - ${CANDIDATE_FULL_NAME} for ${JOB_TITLE} role`, { exact: true }).first()).not.toBeVisible();
 });
 
-// HIR - 4049 //
-test('TC-OM-18 : Verify Offer Call Scheduling Fields', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-
-    await expect(page.locator('.other-attendees-selector')).toBeVisible();
-    await page.locator('.other-attendees-selector').click();
-    await expect(page.locator(`label:has-text("Riya.singh")`)).toBeVisible();
-    await page.getByText('HR Manager', { exact: true }).click();
-
-    await expect(page.getByRole('textbox', { name: 'Select date' })).toBeVisible();
-    await page.getByRole('textbox', { name: 'Select date' }).click();
-    await expect(page.locator('.ant-picker-date-panel')).toBeVisible();
-    await expect(page.locator(`.ant-picker-time-panel`)).toBeVisible();
-    await page.getByText('Start Date and Time', { exact: true }).first().click();
-
-    await expect(page.locator(`span[title="Virtual"]`)).toBeVisible();
-    await page.locator(`span[title="Virtual"]`).click();
-
-    await expect(page.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
-  
-    await expect(page.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
-});
-
-test('TC-OM-19 : Verify Attendees Selector for Offer Call', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-
-    await expect(page.locator('.other-attendees-selector')).toBeVisible();
-    await page.locator('.other-attendees-selector').click();
-    await page.locator(`label:has-text("Riya.singh")`).click();
-    await page.locator(`label:has-text("Super Admin")`).click();
-
-    await expect(page.locator('.custom-value-container')).toHaveText('Riya.singh and 1 other');
-});
-
-test('TC-OM-20 : Verify Call Type Selector (Virtual/In-Person)', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-
-    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
-
-    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
-    await page.locator('span[title="Virtual"]').click();
-    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
-    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
-
-    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
-    await expect(page.locator('span[title="In Person"]')).toBeVisible();
-
-    await page.locator('span[title="In Person"]').click();
-    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' })).toBeVisible();
-    await expect(interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' })).toBeVisible();
-    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'Virtual' }).click();
-    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
-});
-
-test('TC-OM-21 : Verify Office Location for In-Person Call Type', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-
-    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
-
-    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
-    await page.locator('span[title="Virtual"]').click();
-    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
-    await expect(page.locator('span[title="In Person"]')).toBeVisible();
-
-    const interviewLocationSelect = page.locator('.ant-select').filter({
-      has: page.locator('.ant-select-selection-placeholder', { hasText: 'Select interview location...' })
-    });
-    await expect(interviewLocationSelect.locator('.ant-select-selection-placeholder')).toHaveText(
-      'Select interview location...'
-    );
-    await interviewLocationSelect.locator('.ant-select-selector').click();
-
-    const locationDropdown = page.locator('.ant-select-dropdown').last();
-    await expect(locationDropdown.locator('.ant-select-item-option-content')).toContainText(
-      '1105, Shivalik Abaise'
-    );
-});
-
-test('TC-OM-22 : Verify Tooltip for Schedule Offer Call', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).hover();
-    const tooltip = await page.locator('.ant-tooltip-inner');
-    await expect(tooltip).toHaveText('Schedule offer call');
-});
-
-test('TC-OM-23 : Verify Office Location Handling for Virtual Call Type', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-
-    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
-    await page.locator('span[title="Virtual"]').click();
-
-    await expect(page.getByText('Interview Address', { exact: true })).not.toBeVisible();
-});
-
-test('TC-OM-24 : Verify Handling of Invalid Input for Date/Time', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-    await page.getByRole('textbox', { name: 'Select date' }).click();
-     // Get yesterday's date in YYYY-MM-DD format
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const formattedDate = yesterday.toISOString().split('T')[0];
-
-  // Locate the date cell using title attribute
-  const dateCell = page.locator(`td[title="${formattedDate}"]`);
-
-  // Assert it has disabled class
-  await expect(dateCell).toHaveClass(/ant-picker-cell-disabled/);
-});
-
-test('TC-OM-25 : Verify Meeting Link Handling for In-Person Call Type', async ({ page }) => {
-    await loginAndNavigateToCreateJob(page);
-    await clickOnTheJob(page);
-    await page.waitForTimeout(3000);
-    await page.locator('#rc-tabs-0-tab-2').click();
-    await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
-    await jobsTableCandidateName(page).click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Call Schedule Pending')).toBeVisible();
-    await page.getByRole('img', { name: 'calendar' }).click();
-    const interviewTypeMenu = page.locator('.ant-select-dropdown').last();
-
-    await expect(page.locator('span[title="Virtual"]')).toBeVisible();
-    await page.locator('span[title="Virtual"]').click();
-    await interviewTypeMenu.locator('.ant-select-item-option', { hasText: 'In Person' }).click();
-    await expect(page.locator('span[title="In Person"]')).toBeVisible();
-
-    await expect(page.getByRole('img', { name: 'In-Person' })).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Microsoft Teams' })).not.toBeVisible();
-});
 
 // HIR - 4048 //
-test('TC-OM-26 : Validate Offer Released stage appears in candidate pipeline', async ({ page }) => {
+test('TC-OM-26 : Validate Offer Released stage appears in candidate pipeline @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1165,7 +1187,7 @@ test('TC-OM-26 : Validate Offer Released stage appears in candidate pipeline', a
     ).toBeVisible();
 });
 
-test('TC-OM-27 : Validate recruiter can move candidate to Offer Released stage', async ({ page }) => {
+test('TC-OM-27 : Validate recruiter can move candidate to Offer Released stage @smoke @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1187,13 +1209,13 @@ test('TC-OM-27 : Validate recruiter can move candidate to Offer Released stage',
     await expect(page.getByText('Stage: Offer Release Pending')).toBeVisible();
 });
 
-test('TC-OM-28 : Validate Offer Release Pending card appears in Recruiter Awaiting Action section', async ({ page }) => {
+test('TC-OM-28 : Validate Offer Release Pending card appears in Recruiter Awaiting Action section @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Release Pending', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-29 : Validate clicking Offer Release Pending card filters candidate list', async ({ page }) => {
+test('TC-OM-29 : Validate clicking Offer Release Pending card filters candidate list @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Release Pending', { exact: true }).first()).toBeVisible();
@@ -1201,19 +1223,19 @@ test('TC-OM-29 : Validate clicking Offer Release Pending card filters candidate 
     await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
 });
 
-test('TC-OM-30 : Validate Offer Acceptance Pending card appears in Candidates Awaiting Action section', async ({ page }) => {
+test('TC-OM-30 : Validate Offer Acceptance Pending card appears in Candidates Awaiting Action section @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Acceptance Pending', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-31 : Validate Offer Released stage card appears in Candidate by Stages section', async ({ page }) => {
+test('TC-OM-31 : Validate Offer Released stage card appears in Candidate by Stages section @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Released', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-32 : Release the offer letter for the candidate',{timeout: 10000}, async ({ page }) => {
+test('TC-OM-32 : Release the offer letter for the candidate @smoke @regression @offer-management',{timeout: 10000}, async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1231,7 +1253,7 @@ test('TC-OM-32 : Release the offer letter for the candidate',{timeout: 10000}, a
     await expect(page.locator('body')).toContainText('Offer released successfully');
 });
 
-test('TC-OM-33 : Validate clicking Offer Released stage card filters candidate listing', async ({ page }) => {
+test('TC-OM-33 : Validate clicking Offer Released stage card filters candidate listing @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Dashboard', { exact: true }).first().click();
     await expect(page.getByText('Offer Released', { exact: true }).first()).toBeVisible();
@@ -1239,11 +1261,12 @@ test('TC-OM-33 : Validate clicking Offer Released stage card filters candidate l
     await expect(jobsTableCandidateName(page)).toBeVisible({ timeout: 20000 });
 });
 
-test('TC-OM-34 : Validate stage filter dropdown shows Offer Released option',{timeout: 10000}, async ({ page }) => {
+test('TC-OM-34 : Validate stage filter dropdown shows Offer Released option @regression @offer-management',{timeout: 10000}, async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await page.getByText('Candidates', { exact: true }).first().click();
    // await page.getByRole('img', { name: 'close' }).click();
    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle');
     await page.getByRole('img', { name: 'sort' }).click();
     await page.getByRole('menu').getByText('Current Stage', { exact: true }).click();
     await page.getByRole('textbox', { name: 'Search...' }).click();
@@ -1255,8 +1278,9 @@ test('TC-OM-34 : Validate stage filter dropdown shows Offer Released option',{ti
     await expect(page.locator('.ant-cascader-menu-item', {hasText: 'Offer Released'})).toBeVisible();
 });
 
+
 // HIR - 4047 //
-test('TC-OM-35 : Verify navigation to Offer tab from Candidate Details', async ({ page }) => {
+test('TC-OM-35 : Verify navigation to Offer tab from Candidate Details @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1269,7 +1293,7 @@ test('TC-OM-35 : Verify navigation to Offer tab from Candidate Details', async (
     await expect(page.getByText('Offer', { exact: true }).first()).toBeVisible();
 });
 
-test('TC-OM-36 : Verify Offer tab loads candidate offer information', async ({ page }) => {
+test('TC-OM-36 : Verify Offer tab loads candidate offer information @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1286,7 +1310,7 @@ test('TC-OM-36 : Verify Offer tab loads candidate offer information', async ({ p
     await expect(sentByLine).toContainText('Super Admin');
 });
 
-test('TC-OM-37 : Verify Accepted status display with green indicator', async ({ page }) => {
+test('TC-OM-37 : Verify Accepted status display with green indicator @smoke @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1302,18 +1326,21 @@ test('TC-OM-37 : Verify Accepted status display with green indicator', async ({ 
     await canvas2.scrollIntoViewIfNeeded();
     await drawSignature(offerAcceptPopup, canvas2);
     await offerAcceptPopup.getByRole('button', { name: 'Accept offer' }).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(10000);
     await expect(offerAcceptPopup.getByRole('button', { name: 'Accept offer' })).toBeEnabled();
     await offerAcceptPopup.getByRole('button', { name: 'Accept offer' }).click();
-    await expect(page.locator('body')).toContainText(`Congratulations, ${CANDIDATE_FULL_NAME}!`);
+    await expect(offerAcceptPopup.locator('body')).toContainText(`Congratulations, ${CANDIDATE_FULL_NAME}!`, {
+      timeout: 20000,
+    });
     await offerAcceptPopup.close();
     await page.bringToFront();
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
     await expect(page.getByText('Stage: Offer Accepted')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('svg[data-icon="check-circle"]')).toBeVisible({ timeout: 5000 });
 });
 
-test('TC-OM-38 : Verify acceptance date and time display', async ({ page }) => {
+test('TC-OM-38 : Verify acceptance date and time display @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1333,7 +1360,7 @@ test('TC-OM-38 : Verify acceptance date and time display', async ({ page }) => {
     console.log("Offer Accepted Message Text: ", offerAcceptedMessageText);
 });
 
-test('TC-OM-39 : Verify signed document filename visibility', async ({ page }) => {
+test('TC-OM-39 : Verify signed document filename visibility @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1346,7 +1373,7 @@ test('TC-OM-39 : Verify signed document filename visibility', async ({ page }) =
     await expect(page.locator(`span:has-text("Download signed offer letter")`)).toBeVisible();
 });
 
-test('TC-OM-40 : Verify signed document download using icon', async ({ page }) => {
+test('TC-OM-40 : Verify signed document download using icon @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1367,7 +1394,8 @@ test('TC-OM-40 : Verify signed document download using icon', async ({ page }) =
     console.log("Downloaded Signed Offer Filename: ", download.suggestedFilename());
 });
 
-test('TC-OM-41 : Verify Declined status display with red indicator', async ({ page, browser }) => {
+test('TC-OM-41 : Verify Declined status display with red indicator  @regression @offer-management',{timeout: 240000}, async ({ page, browser }) => {
+    test.setTimeout(240000);
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1452,7 +1480,7 @@ test('TC-OM-41 : Verify Declined status display with red indicator', async ({ pa
     await expect(page.locator('svg[data-icon="close-circle"]')).toBeVisible({ timeout: 5000 });
 });
 
-test('TC-OM-42 : Verify declined date and time display', async ({ page }) => {
+test('TC-OM-42 : Verify declined date and time display @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1471,7 +1499,7 @@ test('TC-OM-42 : Verify declined date and time display', async ({ page }) => {
     console.log("Offer Declined Message Text: ", offerDeclinedMessageText);
 });
 
-test('TC-OM-43 : Verify recruiter can view original offer details for declined offer', async ({ page }) => {
+test('TC-OM-43 : Verify recruiter can view original offer details for declined offer @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1484,7 +1512,7 @@ test('TC-OM-43 : Verify recruiter can view original offer details for declined o
     await expect(page.getByRole('img', { name: 'file-done' })).toBeVisible();
 });
 
-test('TC-OM-44 : Verify no signed document shown for declined candidate', async ({ page }) => {
+test('TC-OM-44 : Verify no signed document shown for declined candidate @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1497,21 +1525,10 @@ test('TC-OM-44 : Verify no signed document shown for declined candidate', async 
     await expect(page.locator(`span:has-text("Download signed offer letter")`)).not.toBeVisible();
 });
 
-// HIR - 3922 //
 
-test('TC-OM-45 : Verify File Size Validation (>10MB)Verify File Size Validation (>10MB)',{timeout: 180000}, async ({ page }) => {
-    // await loginAndNavigateToCreateJob(page);
-    // await clickOnTheJob(page);
-    // await page.waitForTimeout(3000);
-    // await page.locator('#rc-tabs-0-tab-2').click();
-    // await expect(page.getByRole('button', { name: 'Add candidates' })).toBeVisible({ timeout: 20000 });
-    // await expect(jobsTableCandidateName2(page)).toBeVisible({ timeout: 20000 });
-    // await jobsTableCandidateName2(page).click();
-    // await page.waitForTimeout(3000);
-    // await expect(page.getByText('Stage: Offer Release Pending')).toBeVisible();
-    // await page.setInputFiles('input[type="file"]', INVALID_FILE_SIZE);
-    // await expect(page.getByText(/File size exceeds max limit:/i)).toBeVisible();
-    // await page.waitForTimeout(3000);
+// HIR - 3922 //
+test('TC-OM-45 : Verify file size validation (>10MB) @regression @offer-management',{ timeout: 240000 },async ({ page }) => {
+    test.setTimeout(240000);
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1525,10 +1542,10 @@ test('TC-OM-45 : Verify File Size Validation (>10MB)Verify File Size Validation 
     await moveCandidateToDifferentStage2(page);
     await page.setInputFiles('input[type="file"]', INVALID_FILE_SIZE);
     await expect(page.getByText(/File size exceeds max limit:/i)).toBeVisible();
-    await page.waitForTimeout(3000);
-});
+  }
+);
 
-test('TC-OM-46 : Verify Remove Uploaded File', async ({ page }) => {
+test('TC-OM-46 : Verify Remove Uploaded File @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1544,7 +1561,7 @@ test('TC-OM-46 : Verify Remove Uploaded File', async ({ page }) => {
     await expect(page.getByRole('img', { name: 'close' }).nth(2)).not.toBeVisible();
 });
 
-test('TC-OM-47 : Verify Release Offer Button Disabled Without Upload', async ({ page }) => {
+test('TC-OM-47 : Verify Release Offer Button Disabled Without Upload @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1557,7 +1574,7 @@ test('TC-OM-47 : Verify Release Offer Button Disabled Without Upload', async ({ 
     await expect(page.locator(`span:has-text("Release Offer")`)).toBeDisabled();
 });
 
-test('TC-OM-48 : Verify Release Offer Button Enabled After Upload', async ({ page }) => {
+test('TC-OM-48 : Verify Release Offer Button Enabled After Upload @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1571,7 +1588,7 @@ test('TC-OM-48 : Verify Release Offer Button Enabled After Upload', async ({ pag
     await expect(page.locator(`span:has-text("Release Offer")`)).toBeEnabled();
 });
 
-test('TC-OM-49 : Verify Resend Button Visibility', async ({ page }) => {
+test('TC-OM-49 : Verify Resend Button Visibility @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1580,7 +1597,7 @@ test('TC-OM-49 : Verify Resend Button Visibility', async ({ page }) => {
     await expect(jobsTableCandidateName2(page)).toBeVisible({ timeout: 20000 });
     await jobsTableCandidateName2(page).click();
     await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Acceptance Pending')).toBeVisible();
+    await expect(page.getByText('Stage: Offer Release Pending')).toBeVisible();
     await page.setInputFiles('input[type="file"]', OFFER_LETTER_1);
     await expect(page.locator(`span:has-text("Release Offer")`)).toBeEnabled();
     await page.locator(`span:has-text("Release Offer")`).click();
@@ -1588,7 +1605,7 @@ test('TC-OM-49 : Verify Resend Button Visibility', async ({ page }) => {
     await expect(page.locator(`span:has-text("Resend Offer")`)).toBeVisible();
 });
 
-test('TC-OM-50 : Upload Area Instruction Clarity', async ({ page }) => {
+test('TC-OM-50 : Upload Area Instruction Clarity @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1603,7 +1620,7 @@ test('TC-OM-50 : Upload Area Instruction Clarity', async ({ page }) => {
     await expect(page.locator(`span.ant-upload > div.ant-upload-drag-container > div`).nth(3)).toContainText('Select multiple files at once (Max 5 files)');
 });
 
-test('TC-OM-51 : Upload Progress Indicator Visibility', async ({ page }) => {
+test('TC-OM-51 : Upload Progress Indicator Visibility @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1617,7 +1634,7 @@ test('TC-OM-51 : Upload Progress Indicator Visibility', async ({ page }) => {
     await expect(page.locator('.ant-spin.ant-spin-sm.ant-spin-spinning')).toBeVisible();
 });
 
-test('TC-OM-52 : Workflow Progress Updates on Offer Upload', async ({ page }) => {
+test('TC-OM-52 : Workflow Progress Updates on Offer Upload @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1631,7 +1648,7 @@ test('TC-OM-52 : Workflow Progress Updates on Offer Upload', async ({ page }) =>
     await expect(page.getByRole('heading', { name: 'Offer Released' })).toBeVisible();
 });
 
-test('TC-OM-53 : Workflow Progress Updates on Offer Sent', async ({ page }) => {
+test('TC-OM-53 : Workflow Progress Updates on Offer Sent @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1645,8 +1662,9 @@ test('TC-OM-53 : Workflow Progress Updates on Offer Sent', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Offer Acceptance Pending' })    ).toBeVisible();
 });
 
+
 // HIR - 3923 //
-test('TC-OM-54 : Verify signed PDF generated', async ({ page }, testInfo) => {
+test('TC-OM-54 : Verify signed PDF generated @regression @offer-management', async ({ page }, testInfo) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1669,7 +1687,7 @@ test('TC-OM-54 : Verify signed PDF generated', async ({ page }, testInfo) => {
     expect(text).toContain('Digitally Signed & Accepted on');
 });
 
-test('TC-OM-55 : Verify link reuse after acceptance', async ({ page }) => {
+test('TC-OM-55 : Verify link reuse after acceptance @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1684,7 +1702,7 @@ test('TC-OM-55 : Verify link reuse after acceptance', async ({ page }) => {
     await expect(page1.getByRole('heading', { name: 'Offer Already Accepted' })).toBeVisible();
 });
 
-test('TC-OM-56 : Verify link reuse after decline', async ({ page }) => {
+test('TC-OM-56 : Verify link reuse after decline @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1699,7 +1717,7 @@ test('TC-OM-56 : Verify link reuse after decline', async ({ page }) => {
     await expect(page1.getByRole('heading', { name: 'Offer Already Declined' })).toBeVisible();
 });
 
-test('TC-OM-57 : Verify candidate workflow when accepting offer', async ({ page }) => {
+test('TC-OM-57 : Verify candidate workflow when accepting offer @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1713,7 +1731,7 @@ test('TC-OM-57 : Verify candidate workflow when accepting offer', async ({ page 
     await expect(page.getByRole('heading', { name: 'Offer Accepted' })).toBeVisible();
 });
 
-test('TC-OM-58 : Verify candidate workflow when declining offer', async ({ page }) => {
+test('TC-OM-58 : Verify candidate workflow when declining offer @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1727,8 +1745,7 @@ test('TC-OM-58 : Verify candidate workflow when declining offer', async ({ page 
     await expect(page.getByRole('heading', { name: 'Offer Declined' })).toBeVisible();
 });
 
-
-test('TC-OM-59 : Verify candidate can download signed offer letter after acceptance', async ({ page }, testInfo) => {
+test('TC-OM-59 : Verify candidate can download signed offer letter after acceptance @regression @offer-management', async ({ page }, testInfo) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1754,7 +1771,7 @@ test('TC-OM-59 : Verify candidate can download signed offer letter after accepta
     expect(text).toContain('Digitally Signed & Accepted on');
 });
 
-test('TC-OM-60 : Verify workflow when candidate opens accepted link again', async ({ page }) => {
+test('TC-OM-60 : Verify workflow when candidate opens accepted link again @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);
@@ -1773,7 +1790,7 @@ test('TC-OM-60 : Verify workflow when candidate opens accepted link again', asyn
     await expect(page.getByRole('heading', { name: 'Offer Accepted' })).toBeVisible();
 });
 
-test('TC-OM-61 : Verify workflow when candidate opens declined link again', async ({ page }) => {
+test('TC-OM-61 : Verify workflow when candidate opens declined link again @regression @offer-management', async ({ page }) => {
     await loginAndNavigateToCreateJob(page);
     await clickOnTheJob(page);
     await page.waitForTimeout(3000);

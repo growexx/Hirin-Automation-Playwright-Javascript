@@ -1,23 +1,26 @@
 # Runs @smoke tests on a schedule. GitHub cron uses UTC only (no one-shot "tomorrow").
-# Schedule: Monday–Thursday only (day-of-week 1–4). Time: 05:00 UTC (cron below).
+# Schedule: Monday-Thursday only (day-of-week 1-4). Time: 05:00 UTC (cron below).
 # For India (IST) ~10:30 on those weekdays, use e.g. cron: '30 5 * * 1-4' and adjust as needed.
-# First run: next calendar trigger after you push (next Mon–Thu after 05:00 UTC).
+# First run: next calendar trigger after you push (next Mon-Thu after 05:00 UTC).
 #
 # Live test names in the Actions log: enabled via --reporter=line (updates as each test runs).
 #
-# Email report: Gmail SMTP (smtp.gmail.com:465). Do not put passwords in this file — use Repository secrets only.
-# Settings → Secrets and variables → Actions → New repository secret:
-#   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From)
-#   GMAIL_APP_PASSWORD  account password, or Google “App password” if 2-Step Verification is on
-#   OUTLOOK_EMAIL       bikash.mazumder@growexx.com  (To — report recipient)
-# If the HTML report is missing, a small stub ZIP is still attached so this step always runs
-# (previously the email was skipped whenever playwright-report/index.html was absent).
-# If secrets are missing or SMTP is blocked for the mailbox, the email step fails softly (continue-on-error).
+# Email report: Gmail SMTP (smtp.gmail.com:587 + STARTTLS). Do not put passwords in this file -- use Repository secrets only.
+# Settings > Secrets and variables > Actions > New repository secret:
+#   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From address)
+#   GMAIL_APP_PASSWORD  MUST be a 16-character Google App Password -- NOT the regular account password.
+#                       Google disabled plain-password SMTP auth on March 14, 2025.
+#                       To generate: myaccount.google.com > Security > 2-Step Verification (enable first)
+#                                    > App Passwords > Mail > copy the 16-char code and store without spaces.
+#   OUTLOOK_EMAIL       bikash.mazumder@growexx.com  (To - report recipient)
+# If the HTML report is missing, a small stub ZIP is still attached so the email step always runs.
+# If secrets are missing or SMTP auth fails, the email step fails softly (continue-on-error: true).
+# Check the "Check email secrets" step in the Actions log to confirm all three secrets are set.
 name: Smoke tests (scheduled)
 
 on:
   schedule:
-    # Mon–Thu only (1–4); 05:00 UTC
+    # Mon-Thu only (1-4); 05:00 UTC
     - cron: '0 5 * * 1-4'
   workflow_dispatch:
 
@@ -73,17 +76,24 @@ jobs:
             zip -r -q playwright-smoke-report.zip .smoke-email-stub
           fi
 
+      - name: Check email secrets
+        if: always() && !cancelled()
+        run: |
+          echo "GMAIL_USERNAME set: ${{ secrets.GMAIL_USERNAME != '' }}"
+          echo "GMAIL_APP_PASSWORD set: ${{ secrets.GMAIL_APP_PASSWORD != '' }}"
+          echo "OUTLOOK_EMAIL set: ${{ secrets.OUTLOOK_EMAIL != '' }}"
+
       - name: Email Playwright report
         if: always() && !cancelled()
         continue-on-error: true
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
+          server_port: 587
+          secure: false
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: '[Smoke] ${{ steps.smoke_tests.outcome }} — ${{ github.repository }} #${{ github.run_number }}'
+          subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
           from: ${{ secrets.GMAIL_USERNAME }}
           body: |

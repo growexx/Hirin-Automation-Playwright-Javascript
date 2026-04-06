@@ -3,9 +3,10 @@
 # For India (IST) ~10:30 on those weekdays, use e.g. cron: '30 5 * * 1-4' and adjust as needed.
 # First run: next calendar trigger after you push (next Mon-Thu after 05:00 UTC).
 #
-# Live test names in the Actions log: enabled via --reporter=line (updates as each test runs).
+# Live test names in the Actions log: enabled via --reporter=list (updates as each test runs).
 #
-# Email report: Gmail SMTP (smtp.gmail.com:587 + STARTTLS). Do not put passwords in this file -- use Repository secrets only.
+# Email report: Allure single-file HTML attached directly (typically 1-5 MB, well under Gmail 25 MB limit).
+# Gmail SMTP (smtp.gmail.com:587 + STARTTLS). Do not put passwords in this file -- use Repository secrets only.
 # Settings > Secrets and variables > Actions > New repository secret:
 #   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From address)
 #   GMAIL_APP_PASSWORD  MUST be a 16-character Google App Password -- NOT the regular account password.
@@ -13,7 +14,6 @@
 #                       To generate: myaccount.google.com > Security > 2-Step Verification (enable first)
 #                                    > App Passwords > Mail > copy the 16-char code and store without spaces.
 #   OUTLOOK_EMAIL       bikash.mazumder@growexx.com  (To - report recipient)
-# If the HTML report is missing, a small stub ZIP is still attached so the email step always runs.
 # If secrets are missing or SMTP auth fails, the email step fails softly (continue-on-error: true).
 # Check the "Check email secrets" step in the Actions log to confirm all three secrets are set.
 name: Smoke tests (scheduled)
@@ -43,38 +43,32 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       # list = prints each test as a separate log line in GitHub Actions.
-      # html = playwright-report/ for the artifact and email attachment.
+      # allure-playwright reporter (configured in playwright.config.js) writes to allure-results/.
       - name: Run smoke tests
         id: smoke_tests
         env:
           CI: true
           FORCE_COLOR: '0'
-        run: npx playwright test --grep '@smoke' --project=chromium --reporter=list --reporter=html
+        run: npx playwright test --grep '@smoke' --project=chromium --reporter=list
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-smoke-report
-          path: playwright-report/
-          retention-days: 14
-
-      - name: Zip Playwright HTML report
-        id: zip_report
+      - name: Set up Java (required by allure-commandline)
         if: always() && !cancelled()
-        run: |
-          rm -f playwright-smoke-report.zip
-          if [ -d playwright-report ] && [ -f playwright-report/index.html ]; then
-            zip -r -q playwright-smoke-report.zip playwright-report
-            echo "Packed Playwright HTML report for email."
-          else
-            echo "No HTML report (playwright-report/index.html missing); attaching stub ZIP so email still sends."
-            mkdir -p .smoke-email-stub
-            {
-              echo "No Playwright HTML report was produced for this run (early failure or reporter did not write playwright-report/index.html)."
-              echo "Open the workflow run below for logs and the uploaded artifact if present."
-            } > .smoke-email-stub/README.txt
-            zip -r -q playwright-smoke-report.zip .smoke-email-stub
-          fi
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Generate Allure single-file HTML report
+        if: always() && !cancelled()
+        run: npx allure generate allure-results --single-file --clean -o allure-report
+
+      - name: Upload Allure report artifact
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-smoke-report
+          path: allure-report/
+          retention-days: 14
 
       - name: Check email secrets
         if: always() && !cancelled()
@@ -83,7 +77,7 @@ jobs:
           echo "GMAIL_APP_PASSWORD set: ${{ secrets.GMAIL_APP_PASSWORD != '' }}"
           echo "OUTLOOK_EMAIL set: ${{ secrets.OUTLOOK_EMAIL != '' }}"
 
-      - name: Email Playwright report
+      - name: Email Allure report
         if: always() && !cancelled()
         continue-on-error: true
         uses: dawidd6/action-send-mail@v4
@@ -97,9 +91,10 @@ jobs:
           to: ${{ secrets.OUTLOOK_EMAIL }}
           from: ${{ secrets.GMAIL_USERNAME }}
           body: |
-            Scheduled smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
-
-            Attachment: full HTML report (playwright-report/) when available; otherwise a README-only stub ZIP.
+            Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          attachments: playwright-smoke-report.zip
+
+            The Allure report is attached as a single self-contained HTML file.
+            Open it directly in any browser -- no server or unzip required.
+          attachments: allure-report/index.html

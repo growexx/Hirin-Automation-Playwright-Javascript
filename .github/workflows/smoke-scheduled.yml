@@ -36,6 +36,26 @@ jobs:
           node-version: lts/*
           cache: npm
 
+      - name: Send test email
+        if: always() && !cancelled()
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
+          subject: '[Smoke Test] Email Test Run — ${{ github.repository }} #${{ github.run_number }}'
+          to: ${{ secrets.OUTLOOK_EMAIL }}
+          from: riya.growexx@gmail.com
+          body: |
+            This is a test email from GitHub Actions smoke test workflow.
+
+            Test run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            If you received this email, the SMTP configuration is working correctly.
+
       - name: Install dependencies
         run: npm ci
 

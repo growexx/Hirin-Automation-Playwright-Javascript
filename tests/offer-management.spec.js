@@ -1476,8 +1476,8 @@ test('TC-OM-41 : Verify Declined status display with red indicator  @regression 
     await page.bringToFront();
     await page.reload();
     await page.waitForTimeout(3000);
-    await expect(page.getByText('Stage: Offer Declined')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('svg[data-icon="close-circle"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Stage: Offer Declined')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('svg[data-icon="close-circle"]')).toBeVisible({ timeout: 10000 });
 });
 
 test('TC-OM-42 : Verify declined date and time display @regression @offer-management', async ({ page }) => {

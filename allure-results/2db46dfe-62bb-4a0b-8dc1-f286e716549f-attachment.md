@@ -1,0 +1,294 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - alert [ref=e2]
+  - iframe [ref=e4]:
+    - generic [active]:
+      - generic:
+        - text:   
+        - button [ref=f2e1] [cursor=pointer]
+  - generic [ref=e5]:
+    - complementary [ref=e6]:
+      - generic [ref=e7]:
+        - link "logo" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - img "logo" [ref=e10]
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - generic [ref=e13] [cursor=pointer]:
+              - img [ref=e15]
+              - generic [ref=e17]: Dashboard
+            - generic [ref=e18] [cursor=pointer]:
+              - img [ref=e20]
+              - generic [ref=e22]: Jobs
+            - generic [ref=e23] [cursor=pointer]:
+              - img [ref=e25]
+              - generic [ref=e27]: Candidates
+            - generic [ref=e28] [cursor=pointer]:
+              - img [ref=e30]
+              - generic [ref=e32]: Reports
+          - generic [ref=e33]:
+            - generic [ref=e34] [cursor=pointer]:
+              - img "support-icon" [ref=e36]
+              - generic [ref=e37]: Support
+            - generic [ref=e38] [cursor=pointer]:
+              - img [ref=e40]
+              - generic [ref=e42]: Settings
+            - generic [ref=e44] [cursor=pointer]:
+              - img "logout-icon" [ref=e46]
+              - generic [ref=e47]: Logout
+    - main [ref=e50]:
+      - main [ref=e52]:
+        - generic [ref=e53]:
+          - generic [ref=e56]:
+            - generic [ref=e57]:
+              - button "Filter" [ref=e58] [cursor=pointer]:
+                - img "search" [ref=e59]:
+                  - img [ref=e60]
+              - button "View options" [ref=e62] [cursor=pointer]:
+                - img "sort" [ref=e63]
+            - button "plus Create Job" [ref=e64] [cursor=pointer]:
+              - img "plus" [ref=e65]:
+                - img [ref=e66]
+              - text: Create Job
+          - generic [ref=e70]:
+            - article [ref=e72]:
+              - generic [ref=e73]:
+                - generic [ref=e76]:
+                  - heading "Project Manager Mnn3" [level=2] [ref=e78]
+                  - paragraph [ref=e79]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e80]:
+                  - generic [ref=e81] [cursor=pointer]:
+                    - img "All Candidates" [ref=e83]
+                    - generic [ref=e84]: "1"
+                  - generic [ref=e85] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e87]
+                    - generic [ref=e88]: "0"
+            - article [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e94]:
+                  - heading "Mern Developer AI" [level=2] [ref=e96]
+                  - paragraph [ref=e97]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e99] [cursor=pointer]:
+                  - img "All Candidates" [ref=e101]
+                  - generic [ref=e102]: "0"
+            - article [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e108]:
+                  - heading "Mern Developer Auto" [level=2] [ref=e110]
+                  - paragraph [ref=e111]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e112]:
+                  - generic [ref=e113] [cursor=pointer]:
+                    - img "All Candidates" [ref=e115]
+                    - generic [ref=e116]: "0"
+                  - generic [ref=e117] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e119]
+                    - generic [ref=e120]: "0"
+            - article [ref=e122] [cursor=pointer]:
+              - generic [ref=e123]:
+                - generic [ref=e126]:
+                  - heading "Mern Developer" [level=2] [ref=e128]
+                  - paragraph [ref=e129]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - img "All Candidates" [ref=e133]
+                    - generic [ref=e134]: "1"
+                  - generic [ref=e135]:
+                    - img "Recruiter Screening Passed" [ref=e137]
+                    - generic [ref=e138]: "1"
+            - article [ref=e140]:
+              - generic [ref=e141]:
+                - generic [ref=e144]:
+                  - heading "Mern Developer AI" [level=2] [ref=e146]
+                  - paragraph [ref=e147]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e149] [cursor=pointer]:
+                  - img "All Candidates" [ref=e151]
+                  - generic [ref=e152]: "1"
+            - article [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e158]:
+                  - heading "Mern Developer" [level=2] [ref=e160]
+                  - paragraph [ref=e161]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e162]:
+                  - generic [ref=e163] [cursor=pointer]:
+                    - img "All Candidates" [ref=e165]
+                    - generic [ref=e166]: "2"
+                  - generic [ref=e167] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e169]
+                    - generic [ref=e170]: "1"
+            - article [ref=e172]:
+              - generic [ref=e173]:
+                - generic [ref=e176]:
+                  - heading "Product Owner" [level=2] [ref=e178]
+                  - paragraph [ref=e179]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e181] [cursor=pointer]:
+                  - img "All Candidates" [ref=e183]
+                  - generic [ref=e184]: "2"
+            - article [ref=e186]:
+              - generic [ref=e187]:
+                - generic [ref=e190]:
+                  - heading "Mern Developer" [level=2] [ref=e192]
+                  - paragraph [ref=e193]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e195] [cursor=pointer]:
+                  - img "All Candidates" [ref=e197]
+                  - generic [ref=e198]: "0"
+            - article [ref=e200]:
+              - generic [ref=e201]:
+                - generic [ref=e204]:
+                  - heading "Project Manager 2" [level=2] [ref=e206]
+                  - paragraph [ref=e207]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e208]:
+                  - generic [ref=e209] [cursor=pointer]:
+                    - img "All Candidates" [ref=e211]
+                    - generic [ref=e212]: "1"
+                  - generic [ref=e213] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e215]
+                    - generic [ref=e216]: "1"
+            - article [ref=e218]:
+              - generic [ref=e219]:
+                - generic [ref=e222]:
+                  - heading "Project Manager Mnms" [level=2] [ref=e224]
+                  - paragraph [ref=e225]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e226]:
+                  - generic [ref=e227] [cursor=pointer]:
+                    - img "All Candidates" [ref=e229]
+                    - generic [ref=e230]: "1"
+                  - generic [ref=e231] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e233]
+                    - generic [ref=e234]: "1"
+        - generic [ref=e235]:
+          - img "close" [ref=e237] [cursor=pointer]:
+            - img [ref=e238]
+          - generic [ref=e240]:
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - heading "Mern Developer AI" [level=3] [ref=e245]
+                - generic [ref=e246] [cursor=pointer]:
+                  - text: Active
+                  - img "down" [ref=e247]:
+                    - img [ref=e248]
+              - generic [ref=e250]:
+                - paragraph [ref=e252]:
+                  - generic [ref=e253]:
+                    - text: Growexx - Created by Super Admin
+                    - generic "Change job owner" [ref=e254] [cursor=pointer]:
+                      - img "edit" [ref=e255]:
+                        - img [ref=e256]
+                    - text: ","
+                  - generic [ref=e258]: on 06 Apr 2026
+                - button "Add Collaborators" [ref=e260] [cursor=pointer]:
+                  - generic [ref=e261]: Add Collaborators
+            - generic [ref=e262]:
+              - tablist [ref=e263]:
+                - generic [ref=e265]:
+                  - tab "Insights" [ref=e267] [cursor=pointer]
+                  - tab "Candidates (0)" [active] [selected] [ref=e269] [cursor=pointer]
+                  - tab "Questions" [ref=e271] [cursor=pointer]
+                  - tab "Workflow" [ref=e273] [cursor=pointer]
+                  - tab "Job Summary" [ref=e275] [cursor=pointer]
+              - tabpanel "Candidates (0)" [ref=e278]:
+                - generic [ref=e279]:
+                  - generic [ref=e280]:
+                    - generic [ref=e281]:
+                      - button "0" [ref=e282] [cursor=pointer]:
+                        - generic [ref=e284]: "0"
+                      - button "0" [ref=e285] [cursor=pointer]:
+                        - generic [ref=e287]: "0"
+                    - generic [ref=e288]:
+                      - button "download Export" [ref=e289] [cursor=pointer]:
+                        - img "download" [ref=e291]:
+                          - img [ref=e292]
+                        - generic [ref=e294]: Export
+                      - button "plus Add candidates" [ref=e295] [cursor=pointer]:
+                        - img "plus" [ref=e297]:
+                          - img [ref=e298]
+                        - generic [ref=e301]: Add candidates
+                  - table [ref=e308]:
+                    - rowgroup [ref=e310]:
+                      - row "Name Source filter Candidate Owner filter Applied On Screening Score Technical Test Score Recruiter Screening filter AI Interview Score Recommended Score Current Stage filter Backed Out / Rejection Reason filter" [ref=e311]:
+                        - columnheader "Name" [ref=e312] [cursor=pointer]:
+                          - generic [ref=e313]:
+                            - generic [ref=e314]: Name
+                            - generic [ref=e316]:
+                              - img [ref=e317]:
+                                - img [ref=e318]
+                              - img [ref=e320]:
+                                - img [ref=e321]
+                        - columnheader "Source filter" [ref=e323]:
+                          - generic [ref=e324]:
+                            - generic [ref=e325]: Source
+                            - button "filter" [ref=e326] [cursor=pointer]:
+                              - img "filter" [ref=e327]:
+                                - img [ref=e328]
+                        - columnheader "Candidate Owner filter" [ref=e330]:
+                          - generic [ref=e331]:
+                            - generic [ref=e332]: Candidate Owner
+                            - button "filter" [ref=e333] [cursor=pointer]:
+                              - img "filter" [ref=e334]:
+                                - img [ref=e335]
+                        - columnheader "Applied On" [ref=e337] [cursor=pointer]:
+                          - generic [ref=e338]:
+                            - generic [ref=e339]: Applied On
+                            - generic [ref=e341]:
+                              - img [ref=e342]:
+                                - img [ref=e343]
+                              - img [ref=e345]:
+                                - img [ref=e346]
+                        - columnheader "Screening Score" [ref=e348] [cursor=pointer]:
+                          - generic [ref=e349]:
+                            - generic [ref=e350]: Screening Score
+                            - generic [ref=e352]:
+                              - img [ref=e353]:
+                                - img [ref=e354]
+                              - img [ref=e356]:
+                                - img [ref=e357]
+                        - columnheader "Technical Test Score" [ref=e359] [cursor=pointer]:
+                          - generic [ref=e360]:
+                            - generic [ref=e361]: Technical Test Score
+                            - generic [ref=e363]:
+                              - img [ref=e364]:
+                                - img [ref=e365]
+                              - img [ref=e367]:
+                                - img [ref=e368]
+                        - columnheader "Recruiter Screening filter" [ref=e370]:
+                          - generic [ref=e371]:
+                            - generic [ref=e372]: Recruiter Screening
+                            - button "filter" [ref=e373] [cursor=pointer]:
+                              - img "filter" [ref=e374]:
+                                - img [ref=e375]
+                        - columnheader "AI Interview Score" [ref=e377] [cursor=pointer]:
+                          - generic [ref=e378]:
+                            - generic [ref=e379]: AI Interview Score
+                            - generic [ref=e381]:
+                              - img [ref=e382]:
+                                - img [ref=e383]
+                              - img [ref=e385]:
+                                - img [ref=e386]
+                        - columnheader "Recommended Score" [ref=e388] [cursor=pointer]:
+                          - generic [ref=e389]:
+                            - generic [ref=e390]: Recommended Score
+                            - generic [ref=e392]:
+                              - img [ref=e393]:
+                                - img [ref=e394]
+                              - img [ref=e396]:
+                                - img [ref=e397]
+                        - columnheader "Current Stage filter" [ref=e399]:
+                          - generic [ref=e400]:
+                            - generic [ref=e401]: Current Stage
+                            - button "filter" [ref=e402] [cursor=pointer]:
+                              - img "filter" [ref=e403]:
+                                - img [ref=e404]
+                        - columnheader "Backed Out / Rejection Reason filter" [ref=e406]:
+                          - generic [ref=e407]:
+                            - generic [ref=e408]: Backed Out / Rejection Reason
+                            - button "filter" [ref=e409] [cursor=pointer]:
+                              - img "filter" [ref=e410]:
+                                - img [ref=e411]
+                    - rowgroup [ref=e413]:
+                      - row "No data No data" [ref=e414]:
+                        - cell "No data No data" [ref=e415]:
+                          - generic [ref=e417]:
+                            - img "No data" [ref=e419]
+                            - generic [ref=e431]: No data
+```

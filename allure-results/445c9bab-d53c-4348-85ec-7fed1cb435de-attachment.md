@@ -1,0 +1,439 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "logo" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "logo" [ref=e7]
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - generic [ref=e10] [cursor=pointer]:
+              - img [ref=e12]
+              - generic [ref=e14]: Dashboard
+            - generic [ref=e15] [cursor=pointer]:
+              - img [ref=e17]
+              - generic [ref=e19]: Jobs
+            - generic [ref=e20] [cursor=pointer]:
+              - img [ref=e22]
+              - generic [ref=e24]: Candidates
+            - generic [ref=e25] [cursor=pointer]:
+              - img [ref=e27]
+              - generic [ref=e29]: Reports
+          - generic [ref=e30]:
+            - generic [ref=e31] [cursor=pointer]:
+              - img "support-icon" [ref=e33]
+              - generic [ref=e34]: Support
+            - generic [ref=e35] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e39]: Settings
+            - generic [ref=e41] [cursor=pointer]:
+              - img "logout-icon" [ref=e43]
+              - generic [ref=e44]: Logout
+    - main [ref=e47]:
+      - main [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - button "Filter" [ref=e55] [cursor=pointer]:
+                - img "search" [ref=e56]:
+                  - img [ref=e57]
+              - button "View options" [ref=e59] [cursor=pointer]:
+                - img "sort" [ref=e60]
+            - button "plus Create Job" [ref=e61] [cursor=pointer]:
+              - img "plus" [ref=e62]:
+                - img [ref=e63]
+              - text: Create Job
+          - generic [ref=e67]:
+            - article [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e73]:
+                  - heading "Mern Developer" [level=2] [ref=e75]
+                  - paragraph [ref=e76]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e77]:
+                  - generic [ref=e78] [cursor=pointer]:
+                    - img "All Candidates" [ref=e80]
+                    - generic [ref=e81]: "3"
+                  - generic [ref=e82] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e84]
+                    - generic [ref=e85]: "3"
+            - article [ref=e87]:
+              - generic [ref=e88]:
+                - generic [ref=e91]:
+                  - heading "Project Manager Mnn3" [level=2] [ref=e93]
+                  - paragraph [ref=e94]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e95]:
+                  - generic [ref=e96] [cursor=pointer]:
+                    - img "All Candidates" [ref=e98]
+                    - generic [ref=e99]: "1"
+                  - generic [ref=e100] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e102]
+                    - generic [ref=e103]: "1"
+            - article [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e109]:
+                  - heading "Mern Developer AI" [level=2] [ref=e111]
+                  - paragraph [ref=e112]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e114] [cursor=pointer]:
+                  - img "All Candidates" [ref=e116]
+                  - generic [ref=e117]: "0"
+            - article [ref=e119]:
+              - generic [ref=e120]:
+                - generic [ref=e123]:
+                  - heading "Mern Developer Auto" [level=2] [ref=e125]
+                  - paragraph [ref=e126]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e127]:
+                  - generic [ref=e128] [cursor=pointer]:
+                    - img "All Candidates" [ref=e130]
+                    - generic [ref=e131]: "0"
+                  - generic [ref=e132] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e134]
+                    - generic [ref=e135]: "0"
+            - article [ref=e137]:
+              - generic [ref=e138]:
+                - generic [ref=e141]:
+                  - heading "Mern Developer" [level=2] [ref=e143]
+                  - paragraph [ref=e144]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e145]:
+                  - generic [ref=e146] [cursor=pointer]:
+                    - img "All Candidates" [ref=e148]
+                    - generic [ref=e149]: "1"
+                  - generic [ref=e150] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e152]
+                    - generic [ref=e153]: "1"
+            - article [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e159]:
+                  - heading "Mern Developer AI" [level=2] [ref=e161]
+                  - paragraph [ref=e162]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e164] [cursor=pointer]:
+                  - img "All Candidates" [ref=e166]
+                  - generic [ref=e167]: "1"
+            - article [ref=e169]:
+              - generic [ref=e170]:
+                - generic [ref=e173]:
+                  - heading "Mern Developer" [level=2] [ref=e175]
+                  - paragraph [ref=e176]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e177]:
+                  - generic [ref=e178] [cursor=pointer]:
+                    - img "All Candidates" [ref=e180]
+                    - generic [ref=e181]: "2"
+                  - generic [ref=e182] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e184]
+                    - generic [ref=e185]: "1"
+            - article [ref=e187]:
+              - generic [ref=e188]:
+                - generic [ref=e191]:
+                  - heading "Product Owner" [level=2] [ref=e193]
+                  - paragraph [ref=e194]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e196] [cursor=pointer]:
+                  - img "All Candidates" [ref=e198]
+                  - generic [ref=e199]: "2"
+            - article [ref=e201]:
+              - generic [ref=e202]:
+                - generic [ref=e205]:
+                  - heading "Mern Developer" [level=2] [ref=e207]
+                  - paragraph [ref=e208]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e210] [cursor=pointer]:
+                  - img "All Candidates" [ref=e212]
+                  - generic [ref=e213]: "0"
+            - article [ref=e215]:
+              - generic [ref=e216]:
+                - generic [ref=e219]:
+                  - heading "Project Manager 2" [level=2] [ref=e221]
+                  - paragraph [ref=e222]: Growexx - Created by Super Admin, on 06 Apr 2026
+                - generic [ref=e223]:
+                  - generic [ref=e224] [cursor=pointer]:
+                    - img "All Candidates" [ref=e226]
+                    - generic [ref=e227]: "1"
+                  - generic [ref=e228] [cursor=pointer]:
+                    - img "Recruiter Screening Passed" [ref=e230]
+                    - generic [ref=e231]: "1"
+        - generic [ref=e232]:
+          - img "close" [ref=e234] [cursor=pointer]:
+            - img [ref=e235]
+          - generic [ref=e237]:
+            - generic [ref=e240]:
+              - generic [ref=e241]:
+                - heading "Mern Developer" [level=3] [ref=e242]
+                - generic [ref=e243] [cursor=pointer]:
+                  - text: Active
+                  - img "down" [ref=e244]:
+                    - img [ref=e245]
+              - generic [ref=e247]:
+                - paragraph [ref=e249]:
+                  - generic [ref=e250]:
+                    - text: Growexx - Created by Super Admin
+                    - generic "Change job owner" [ref=e251] [cursor=pointer]:
+                      - img "edit" [ref=e252]:
+                        - img [ref=e253]
+                    - text: ","
+                  - generic [ref=e255]: on 06 Apr 2026
+                - button "Add Collaborators" [ref=e257] [cursor=pointer]:
+                  - generic [ref=e258]: Add Collaborators
+            - generic [ref=e259]:
+              - tablist [ref=e260]:
+                - generic [ref=e262]:
+                  - tab "Insights" [ref=e264] [cursor=pointer]
+                  - tab "Candidates (3)" [selected] [ref=e266] [cursor=pointer]
+                  - tab "Questions" [ref=e268] [cursor=pointer]
+                  - tab "Workflow" [ref=e270] [cursor=pointer]
+                  - tab "Job Summary" [ref=e272] [cursor=pointer]
+              - tabpanel "Candidates (3)" [ref=e275]:
+                - generic [ref=e276]:
+                  - generic [ref=e277]:
+                    - generic [ref=e278]:
+                      - button "3" [ref=e279] [cursor=pointer]:
+                        - generic [ref=e281]: "3"
+                      - button "0" [ref=e282] [cursor=pointer]:
+                        - generic [ref=e284]: "0"
+                      - button "3" [ref=e285] [cursor=pointer]:
+                        - generic [ref=e287]: "3"
+                      - button "0" [ref=e288] [cursor=pointer]:
+                        - generic [ref=e290]: "0"
+                      - button "0" [ref=e291] [cursor=pointer]:
+                        - generic [ref=e293]: "0"
+                      - button "3" [ref=e294] [cursor=pointer]:
+                        - generic [ref=e296]: "3"
+                      - button "0" [ref=e297] [cursor=pointer]:
+                        - generic [ref=e299]: "0"
+                      - button "3" [ref=e300] [cursor=pointer]:
+                        - generic [ref=e302]: "3"
+                      - button "3" [ref=e303] [cursor=pointer]:
+                        - generic [ref=e305]: "3"
+                      - button "3" [ref=e306] [cursor=pointer]:
+                        - generic [ref=e308]: "3"
+                      - button "3" [ref=e309] [cursor=pointer]:
+                        - generic [ref=e311]: "3"
+                      - button "3" [ref=e312] [cursor=pointer]:
+                        - generic [ref=e314]: "3"
+                      - button "2" [ref=e315] [cursor=pointer]:
+                        - generic [ref=e317]: "2"
+                      - button "1" [ref=e318] [cursor=pointer]:
+                        - generic [ref=e320]: "1"
+                    - generic [ref=e321]:
+                      - button "download Export" [ref=e322] [cursor=pointer]:
+                        - img "download" [ref=e324]:
+                          - img [ref=e325]
+                        - generic [ref=e327]: Export
+                      - button "plus Add candidates" [ref=e328] [cursor=pointer]:
+                        - img "plus" [ref=e330]:
+                          - img [ref=e331]
+                        - generic [ref=e334]: Add candidates
+                  - table [ref=e341]:
+                    - rowgroup [ref=e343]:
+                      - row "Name Source filter Candidate Owner filter Applied On Screening Score Technical Test Score Recruiter Screening filter AI Interview Score Recommended Score Current Stage filter Backed Out / Rejection Reason filter" [ref=e344]:
+                        - columnheader "Name" [ref=e345] [cursor=pointer]:
+                          - generic [ref=e346]:
+                            - generic [ref=e347]: Name
+                            - generic [ref=e349]:
+                              - img [ref=e350]:
+                                - img [ref=e351]
+                              - img [ref=e353]:
+                                - img [ref=e354]
+                        - columnheader "Source filter" [ref=e356]:
+                          - generic [ref=e357]:
+                            - generic [ref=e358]: Source
+                            - button "filter" [ref=e359] [cursor=pointer]:
+                              - img "filter" [ref=e360]:
+                                - img [ref=e361]
+                        - columnheader "Candidate Owner filter" [ref=e363]:
+                          - generic [ref=e364]:
+                            - generic [ref=e365]: Candidate Owner
+                            - button "filter" [ref=e366] [cursor=pointer]:
+                              - img "filter" [ref=e367]:
+                                - img [ref=e368]
+                        - columnheader "Applied On" [ref=e370] [cursor=pointer]:
+                          - generic [ref=e371]:
+                            - generic [ref=e372]: Applied On
+                            - generic [ref=e374]:
+                              - img [ref=e375]:
+                                - img [ref=e376]
+                              - img [ref=e378]:
+                                - img [ref=e379]
+                        - columnheader "Screening Score" [ref=e381] [cursor=pointer]:
+                          - generic [ref=e382]:
+                            - generic [ref=e383]: Screening Score
+                            - generic [ref=e385]:
+                              - img [ref=e386]:
+                                - img [ref=e387]
+                              - img [ref=e389]:
+                                - img [ref=e390]
+                        - columnheader "Technical Test Score" [ref=e392] [cursor=pointer]:
+                          - generic [ref=e393]:
+                            - generic [ref=e394]: Technical Test Score
+                            - generic [ref=e396]:
+                              - img [ref=e397]:
+                                - img [ref=e398]
+                              - img [ref=e400]:
+                                - img [ref=e401]
+                        - columnheader "Recruiter Screening filter" [ref=e403]:
+                          - generic [ref=e404]:
+                            - generic [ref=e405]: Recruiter Screening
+                            - button "filter" [ref=e406] [cursor=pointer]:
+                              - img "filter" [ref=e407]:
+                                - img [ref=e408]
+                        - columnheader "AI Interview Score" [ref=e410] [cursor=pointer]:
+                          - generic [ref=e411]:
+                            - generic [ref=e412]: AI Interview Score
+                            - generic [ref=e414]:
+                              - img [ref=e415]:
+                                - img [ref=e416]
+                              - img [ref=e418]:
+                                - img [ref=e419]
+                        - columnheader "Recommended Score" [ref=e421] [cursor=pointer]:
+                          - generic [ref=e422]:
+                            - generic [ref=e423]: Recommended Score
+                            - generic [ref=e425]:
+                              - img [ref=e426]:
+                                - img [ref=e427]
+                              - img [ref=e429]:
+                                - img [ref=e430]
+                        - columnheader "Current Stage filter" [ref=e432]:
+                          - generic [ref=e433]:
+                            - generic [ref=e434]: Current Stage
+                            - button "filter" [ref=e435] [cursor=pointer]:
+                              - img "filter" [ref=e436]:
+                                - img [ref=e437]
+                        - columnheader "Backed Out / Rejection Reason filter" [ref=e439]:
+                          - generic [ref=e440]:
+                            - generic [ref=e441]: Backed Out / Rejection Reason
+                            - button "filter" [ref=e442] [cursor=pointer]:
+                              - img "filter" [ref=e443]:
+                                - img [ref=e444]
+                    - rowgroup [ref=e446]:
+                      - row "Arjun Ravani Naukri Super Admin 06/04/2026 - - Passed - - Offer Release Pending -" [ref=e447]:
+                        - cell "Arjun Ravani" [ref=e448]:
+                          - generic [ref=e449] [cursor=pointer]: Arjun Ravani
+                        - cell "Naukri" [ref=e450]
+                        - cell "Super Admin" [ref=e451]
+                        - cell "06/04/2026" [ref=e452]
+                        - cell "-" [ref=e453]
+                        - cell "-" [ref=e454]
+                        - cell "Passed" [ref=e455]
+                        - cell "-" [ref=e456]
+                        - cell "-" [ref=e457]
+                        - cell "Offer Release Pending" [ref=e458]:
+                          - generic [ref=e459]: Offer Release Pending
+                        - cell "-" [ref=e460]
+                      - row "Shailendra Rathore Naukri Super Admin 06/04/2026 - - Passed - - Offer Declined -" [ref=e461]:
+                        - cell "Shailendra Rathore" [ref=e462]:
+                          - generic [ref=e463] [cursor=pointer]: Shailendra Rathore
+                        - cell "Naukri" [ref=e464]
+                        - cell "Super Admin" [ref=e465]
+                        - cell "06/04/2026" [ref=e466]
+                        - cell "-" [ref=e467]
+                        - cell "-" [ref=e468]
+                        - cell "Passed" [ref=e469]
+                        - cell "-" [ref=e470]
+                        - cell "-" [ref=e471]
+                        - cell "Offer Declined" [ref=e472]:
+                          - generic [ref=e473]: Offer Declined
+                        - cell "-" [ref=e474]
+                      - row "Raj Kashyap Naukri Super Admin 06/04/2026 - - Passed - - Offer Accepted -" [ref=e475]:
+                        - cell "Raj Kashyap" [ref=e476]:
+                          - generic [ref=e477] [cursor=pointer]: Raj Kashyap
+                        - cell "Naukri" [ref=e478]
+                        - cell "Super Admin" [ref=e479]
+                        - cell "06/04/2026" [ref=e480]
+                        - cell "-" [ref=e481]
+                        - cell "-" [ref=e482]
+                        - cell "Passed" [ref=e483]
+                        - cell "-" [ref=e484]
+                        - cell "-" [ref=e485]
+                        - cell "Offer Accepted" [ref=e486]:
+                          - generic [ref=e487]: Offer Accepted
+                        - cell "-" [ref=e488]
+                  - generic [ref=e489]:
+                    - paragraph [ref=e490]: Showing 1 to 3 of 3 results
+                    - generic [ref=e491]:
+                      - button "Previous" [disabled] [ref=e492]
+                      - button "Next" [disabled] [ref=e493]
+  - alert [ref=e494]
+  - iframe [ref=e496]:
+    - generic [active]:
+      - generic:
+        - text:   
+        - button "Open chat" [ref=f4e1] [cursor=pointer]
+  - dialog [ref=e498]:
+    - generic [ref=e499]:
+      - generic [ref=e500]:
+        - navigation [ref=e501]:
+          - list [ref=e502]:
+            - listitem [ref=e503]:
+              - generic [ref=e504]: Mern Developer
+            - listitem [ref=e505]: ">"
+            - listitem [ref=e506]:
+              - generic [ref=e507]: Candidate Details
+        - img "close" [ref=e508] [cursor=pointer]:
+          - img [ref=e509]
+      - generic [ref=e512]:
+        - generic [ref=e513]:
+          - generic [ref=e514]:
+            - generic [ref=e515]:
+              - heading "Arjun Ravani" [level=1] [ref=e516]
+              - generic [ref=e517] [cursor=pointer]:
+                - generic [ref=e519]:
+                  - combobox [ref=e521]
+                  - 'generic "Stage: Offer Release Pending" [ref=e522]'
+                - generic:
+                  - img
+            - paragraph [ref=e524]: Applied for Mern Developer
+          - generic [ref=e525]:
+            - paragraph [ref=e526]:
+              - text: Applied on 06 Apr 2026 via
+              - img "Logo of Naukri" [ref=e527]
+            - paragraph [ref=e528]:
+              - generic [ref=e529]:
+                - img "phone" [ref=e530]:
+                  - img [ref=e531]
+                - text: +91-9876543212
+              - generic [ref=e533]: "|"
+              - generic [ref=e534]:
+                - img "mail" [ref=e535]:
+                  - img [ref=e536]
+                - text: arjun.ravani@gmail.com
+            - button "Download Resume Download resume" [ref=e538] [cursor=pointer]:
+              - text: Download Resume
+              - img "Download resume" [ref=e539]
+        - generic [ref=e540]:
+          - tablist [ref=e541]:
+            - generic [ref=e543]:
+              - tab "Offer" [ref=e545] [cursor=pointer]
+              - tab "Document Verification" [selected] [ref=e547] [cursor=pointer]
+              - tab "Notes" [ref=e549] [cursor=pointer]
+              - tab "Feedback" [ref=e551] [cursor=pointer]
+              - tab "Interview Assessment" [ref=e553] [cursor=pointer]
+              - tab "Screening Summary" [ref=e555] [cursor=pointer]
+              - tab "Workflow Progress" [ref=e557] [cursor=pointer]
+              - tab "Resume" [ref=e559] [cursor=pointer]
+          - tabpanel "Document Verification" [ref=e562]:
+            - table [ref=e572]:
+              - rowgroup [ref=e578]:
+                - row "Document Name Status Uploaded On Actions" [ref=e579]:
+                  - columnheader "Document Name" [ref=e580]
+                  - columnheader "Status" [ref=e581]
+                  - columnheader "Uploaded On" [ref=e582]
+                  - columnheader "Actions" [ref=e583]
+              - rowgroup [ref=e584]:
+                - row "Aadhaar Card Pending - -" [ref=e585]:
+                  - cell "Aadhaar Card" [ref=e586]
+                  - cell "Pending" [ref=e587]:
+                    - generic [ref=e588]: Pending
+                  - cell "-" [ref=e589]
+                  - cell "-" [ref=e590]
+                - row "PAN Card Pending - -" [ref=e591]:
+                  - cell "PAN Card" [ref=e592]
+                  - cell "Pending" [ref=e593]:
+                    - generic [ref=e594]: Pending
+                  - cell "-" [ref=e595]
+                  - cell "-" [ref=e596]
+                - row "3 Month Salary Slips Pending - -" [ref=e597]:
+                  - cell "3 Month Salary Slips" [ref=e598]
+                  - cell "Pending" [ref=e599]:
+                    - generic [ref=e600]: Pending
+                  - cell "-" [ref=e601]
+                  - cell "-" [ref=e602]
+```

@@ -5,7 +5,7 @@
 #
 # Live test names in the Actions log: enabled via --reporter=list (updates as each test runs).
 #
-# Email report: Allure single-file HTML attached when ≤ 25 MiB (Gmail limit). CI disables trace/video so the report stays small.
+# Email report: attach only when raw HTML is small enough that base64+MIME stays under Gmail's ~25 MB cap (~18 MiB raw).
 # Gmail SMTP (smtp.gmail.com:587 + STARTTLS). Do not put passwords in this file -- use Repository secrets only.
 # Settings > Secrets and variables > Actions > New repository secret:
 #   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From address)
@@ -94,7 +94,8 @@ jobs:
         id: allure_report
         if: always() && !cancelled()
         run: |
-          MAX=$((25 * 1024 * 1024))
+          # Gmail send limit is ~25 MB for the whole message; MIME base64 grows ~33%, so cap raw file ~18 MiB.
+          MAX_RAW=$((18 * 1024 * 1024))
           if [ ! -f allure-report/index.html ]; then
             echo "attach=false" >> "$GITHUB_OUTPUT"
             echo "bytes=0" >> "$GITHUB_OUTPUT"
@@ -102,7 +103,7 @@ jobs:
           fi
           SIZE=$(stat -c%s allure-report/index.html)
           echo "bytes=$SIZE" >> "$GITHUB_OUTPUT"
-          if [ "$SIZE" -le "$MAX" ]; then
+          if [ "$SIZE" -le "$MAX_RAW" ]; then
             echo "attach=true" >> "$GITHUB_OUTPUT"
           else
             echo "attach=false" >> "$GITHUB_OUTPUT"
@@ -131,11 +132,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
@@ -153,15 +154,15 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            The generated Allure HTML report is ${{ steps.allure_report.outputs.bytes }} bytes (over the 25 MB email limit).
+            The generated Allure HTML report is ${{ steps.allure_report.outputs.bytes }} bytes (too large for a reliable Gmail SMTP attachment once MIME/base64 overhead is applied; limit ~18 MiB raw).
             Download it from the workflow artifact "allure-smoke-report" on the run page above.

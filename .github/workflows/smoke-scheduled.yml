@@ -44,11 +44,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Smoke Test] Email Test Run — ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             This is a test email from GitHub Actions smoke test workflow.
 
@@ -120,8 +120,8 @@ jobs:
       - name: Check email secrets
         if: always() && !cancelled()
         run: |
-          echo "GMAIL_USERNAME set: ${{ secrets.GMAIL_USERNAME != '' }}"
-          echo "GMAIL_APP_PASSWORD set: ${{ secrets.GMAIL_APP_PASSWORD != '' }}"
+          echo "riya.growexx@gmail.com set: riya.growexx@gmail.com != '' }}"
+          echo "hjqmxtstdlpvgfcs set: hjqmxtstdlpvgfcs != '' }}"
           echo "OUTLOOK_EMAIL set: ${{ secrets.OUTLOOK_EMAIL != '' }}"
 
       - name: Email Allure report (with attachment)

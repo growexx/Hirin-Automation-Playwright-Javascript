@@ -5,7 +5,7 @@
 #
 # Live test names in the Actions log: enabled via --reporter=list (updates as each test runs).
 #
-# Email report: Allure single-file HTML attached directly (typically 1-5 MB, well under Gmail 25 MB limit).
+# Email report: Allure single-file HTML attached when ≤ 25 MiB (Gmail limit). CI disables trace/video so the report stays small.
 # Gmail SMTP (smtp.gmail.com:587 + STARTTLS). Do not put passwords in this file -- use Repository secrets only.
 # Settings > Secrets and variables > Actions > New repository secret:
 #   GMAIL_USERNAME      test.addagames1@gmail.com  (SMTP login + From address)
@@ -44,11 +44,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: riya.growexx@gmail.com
-          password: hjqmxtstdlpvgfcs
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: '[Smoke Test] Email Test Run — ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: riya.growexx@gmail.com
+          from: ${{ secrets.GMAIL_USERNAME }}
           body: |
             This is a test email from GitHub Actions smoke test workflow.
 
@@ -78,9 +78,35 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # Safety net: drop video/trace blobs so they are not base64-embedded in single-file HTML.
+      - name: Strip heavy blobs from Allure results
+        if: always() && !cancelled()
+        run: |
+          if [ -d allure-results ]; then
+            find allure-results -type f \( -name '*.webm' -o -name '*.zip' \) -delete
+          fi
+
       - name: Generate Allure single-file HTML report
         if: always() && !cancelled()
         run: npx allure generate allure-results --single-file --clean -o allure-report
+
+      - name: Allure report size (email attachment gate)
+        id: allure_report
+        if: always() && !cancelled()
+        run: |
+          MAX=$((25 * 1024 * 1024))
+          if [ ! -f allure-report/index.html ]; then
+            echo "attach=false" >> "$GITHUB_OUTPUT"
+            echo "bytes=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          SIZE=$(stat -c%s allure-report/index.html)
+          echo "bytes=$SIZE" >> "$GITHUB_OUTPUT"
+          if [ "$SIZE" -le "$MAX" ]; then
+            echo "attach=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "attach=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload Allure report artifact
         if: always() && !cancelled()
@@ -97,8 +123,8 @@ jobs:
           echo "GMAIL_APP_PASSWORD set: ${{ secrets.GMAIL_APP_PASSWORD != '' }}"
           echo "OUTLOOK_EMAIL set: ${{ secrets.OUTLOOK_EMAIL != '' }}"
 
-      - name: Email Allure report
-        if: always() && !cancelled()
+      - name: Email Allure report (with attachment)
+        if: always() && !cancelled() && steps.allure_report.outputs.attach == 'true'
         continue-on-error: true
         uses: dawidd6/action-send-mail@v4
         with:
@@ -115,6 +141,27 @@ jobs:
 
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            The Allure report is attached as a single self-contained HTML file.
+            The Allure report is attached as a single self-contained HTML file (${{ steps.allure_report.outputs.bytes }} bytes).
             Open it directly in any browser -- no server or unzip required.
           attachments: allure-report/index.html
+
+      - name: Email Allure report (no attachment — report too large)
+        if: always() && !cancelled() && steps.allure_report.outputs.attach != 'true'
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
+          to: ${{ secrets.OUTLOOK_EMAIL }}
+          from: ${{ secrets.GMAIL_USERNAME }}
+          body: |
+            Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            The generated Allure HTML report is ${{ steps.allure_report.outputs.bytes }} bytes (over the 25 MB email limit).
+            Download it from the workflow artifact "allure-smoke-report" on the run page above.

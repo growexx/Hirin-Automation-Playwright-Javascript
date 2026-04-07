@@ -11,14 +11,17 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env'), quiet: true });
 
+const isCI = !!process.env.CI;
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   use: {
     screenshot: 'only-on-failure',
-    trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    // Trace/video embed into Allure single-file HTML and can push reports past email limits (~25 MB).
+    trace: isCI ? 'off' : 'retain-on-failure',
+    video: isCI ? 'off' : 'retain-on-failure',
   },
   testDir: './tests',
 

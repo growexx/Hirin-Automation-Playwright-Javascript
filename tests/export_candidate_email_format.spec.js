@@ -227,7 +227,7 @@ test('TC-CE-02 : Verify Export button visible for Admin @regression @export-cand
     await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible();
 });
 
-test('TC-CE-03 : Verify Excel export functionality @regression @export-candidate-email-format', async ({ page }) => {
+test('TC-CE-03 : Verify Excel export functionality @smoke @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
     await page.waitForLoadState('networkidle');
     await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible();
@@ -247,7 +247,7 @@ test('TC-CE-03 : Verify Excel export functionality @regression @export-candidate
     expect(fileExtension).toBe('xlsx');
 });
 
-test('TC-CE-04 : Verify ZIP download functionality @regression @export-candidate-email-format', async ({ page }) => {
+test('TC-CE-04 : Verify ZIP download functionality @smoke @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsAdmin(page);
     await page.waitForLoadState('networkidle');
     await page.locator('[data-testid="export-candidates-button"]').click();
@@ -327,7 +327,7 @@ test('TC-CE-09 : Verify toast auto-dismiss @regression @export-candidate-email-f
     await expect(page.getByText(/Email format copied to clipboard/)).toBeHidden({ timeout: 5000 });
 });
 
-test('TC-CE-10 : Verify candidate count display in modalrmat', async ({ page }) => {
+test('TC-CE-10 : Verify candidate count display in modal @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
     await page.waitForLoadState('networkidle');
     await page.locator('[data-testid="export-candidates-button"]').click();
@@ -410,7 +410,7 @@ test('TC-CE-16: Verify export button visibility on job-level page @regression @e
     await expect(page.locator('.ant-tabs-tabpane-active').getByTestId('export-candidates-button')).toBeVisible({ timeout: 5000 });
 });
 
-test('TC-CE-17: Verify column customization interface displays correctly @regression @export-candidate-email-format', async ({ page }) => {
+test('TC-CE-17: Verify column customization interface displays correctly @smoke @regression @export-candidate-email-format', async ({ page }) => {
     const copyModal = page.getByTestId('copy-email-table-modal');
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
     await page.waitForLoadState('networkidle');
@@ -442,7 +442,7 @@ test('TC-CE-17: Verify column customization interface displays correctly @regres
     await expect(page.getByTitle('Total Experience')).toBeVisible({timeout: 5000});
 });
 
-test('TC-CE-18: Verify copy email format functionality @regression @export-candidate-email-format', async ({ page }) => {
+test('TC-CE-18: Verify copy email format functionality @smoke @regression @export-candidate-email-format', async ({ page }) => {
     const copyModal = page.getByTestId('copy-email-table-modal');
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
     await page.waitForLoadState('networkidle');
@@ -467,4 +467,25 @@ test('TC-CE-18: Verify copy email format functionality @regression @export-candi
     // Capture screenshot of Yopmail with pasted table
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     await page.screenshot({ path: `screenshots/hirin-table-${timestamp}.png` });
+});
+
+test('TC-CE-19: Verify job-level export does not include other job candidates @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('tbody.ant-table-tbody tr.ant-table-row').first().locator('td').nth(1).locator('span.normal-link').click();
+    await page.locator('#rc-tabs-0-tab-2').click();
+    await expect(page.locator('.ant-tabs-tabpane-active').getByTestId('export-candidates-button')).toBeVisible({ timeout: 5000 });
+    await page.locator('.ant-tabs-tabpane-active').getByTestId('export-candidates-button').click();
+    await expect(page.getByText('Download Excel', { exact: true })).toBeVisible();
+    await page.getByText('Download Excel', { exact: true }).click();
+    await expect(page.getByText('Download Excel', { exact: true })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await page.locator(`span:has-text("Export Now")`).click();
+    await page.waitForLoadState('networkidle');
+    const download = await page.waitForEvent('download');
+    await expect(page.getByText(/\d+ candidate(s)? exported successfully/)).toBeVisible({ timeout: 15000 });
+    expect(download.suggestedFilename()).toBeTruthy();
+    // Assert that download file is an Excel file
+    const fileExtension = download.suggestedFilename().split('.').pop();
+    expect(fileExtension).toBe('xlsx');
 });

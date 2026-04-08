@@ -46,11 +46,11 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Playwright CI] SMTP test -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          to: bikash.mazumder@growexx.com
+          from: riya.growexx@gmail.com
           body: |
             This is an automated connectivity check from the push/PR Playwright workflow.
 
@@ -127,11 +127,11 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Playwright CI] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          to: bikash.mazumder@growexx.com
+          from: riya.growexx@gmail.com
           body: |
             Push/PR smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
@@ -148,11 +148,11 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Playwright CI] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          to: bikash.mazumder@growexx.com
+          from: riya.growexx@gmail.com
           body: |
             Push/PR smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 

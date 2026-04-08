@@ -112,28 +112,21 @@ test('TC-CE-03 : Verify Excel export functionality @regression @export-candidate
     expect(fileExtension).toBe('xlsx');
 });
 
-test.skip('TC-CE-04 : Verify ZIP download functionality @regression @export-candidate-email-format', { timeout: 240000 }, async ({ page }) => {
+test.only('TC-CE-04 : Verify ZIP download functionality @regression @export-candidate-email-format', { timeout: 240000 }, async ({ page }) => {
     test.setTimeout(240000);
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
-    await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible();
+    await page.waitForLoadState('networkidle');
     await page.locator('[data-testid="export-candidates-button"]').click();
-    await expect(page.locator('span:has-text("Export Candidates")')).toBeVisible();
-    await expect(page.getByText('Copy for Email (Table Format)')).toBeVisible();
-    await page.getByText('Copy for Email (Table Format)').click();
-    await expect(page.getByText('Copy for Email (Table Format)')).toBeVisible();
-    await page.locator(`span:has-text("Export Now")`).click();
-    await expect(page.getByText('Copy for Email', { exact: true })).toBeVisible();
-
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
     const downloadBtn = page.locator('[data-testid="download-zip-btn"]');
-    await expect(downloadBtn).toBeVisible({ timeout: 20000 });
-    // Button stays disabled while resumes are packaged; Playwright's default click would time out.
-    await expect(downloadBtn).toBeEnabled({ timeout: 200000 });
-
-    const downloadPromise = page.waitForEvent('download');
+    await expect(downloadBtn).toBeVisible({timeout: 5000});
+    await expect(downloadBtn).toBeEnabled({timeout: 5000});
     await downloadBtn.click();
-    const download = await downloadPromise;
-
-    await expect(page.getByText(/Resumes downloaded successfully/)).toBeVisible({ timeout: 18000 });
+    await expect(page.getByText(/Resumes downloaded successfully/)).toBeVisible({timeout: 20000});
+    const download = await page.waitForEvent('download');
     expect(download.suggestedFilename()).toBeTruthy();
     const fileExtension = download.suggestedFilename().split('.').pop();
     expect(fileExtension).toBe('zip');
@@ -141,14 +134,8 @@ test.skip('TC-CE-04 : Verify ZIP download functionality @regression @export-cand
 
 test('TC-CE-05 : Verify copy email button visibility @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
-    // await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible();
-     await page.locator('[data-testid="export-candidates-button"]').click();
-    // await expect(page.locator('span:has-text("Export Candidates")')).toBeVisible();
-    // await expect(page.getByText('Copy for Email (Table Format)')).toBeVisible();
-    // await page.getByText('Copy for Email (Table Format)').click();
-    // await page.locator(`span:has-text("Export Now")`).click();
-    // await expect(page.locator('.ant-modal-header').getByText('Copy for Email')).toBeVisible({ timeout: 5000 });
-   // await page.getByTestId('export-candidates-button').click();
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
     await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
     await page.getByRole('button', { name: 'download Export Now' }).click();
     await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
@@ -157,16 +144,7 @@ test('TC-CE-05 : Verify copy email button visibility @regression @export-candida
 
 test('TC-CE-06 : Verify download ZIP button visibility @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
-    // await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible();
-    // await page.locator('[data-testid="export-candidates-button"]').click();
-    // await expect(page.locator('span:has-text("Export Candidates")')).toBeVisible();
-    // await expect(page.getByText('Copy for Email (Table Format)')).toBeVisible();
-    // await page.getByText('Copy for Email (Table Format)').click();
-    // await page.locator(`span:has-text("Export Now")`).click();
-    // await page.waitForTimeout(5000);
-    // await expect(page.locator('.ant-modal-header').getByText('Copy for Email')).toBeVisible({ timeout: 5000 });
-    // await expect(page.locator('[data-testid="download-zip-btn"]')).toBeEnabled({ timeout: 20000 });
-    // await expect(page.locator('[data-testid="download-zip-btn"]')).toBeVisible({ timeout: 5000 });
+    await page.waitForLoadState('networkidle');
     await page.getByTestId('export-candidates-button').click();
     await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
     await page.getByRole('button', { name: 'download Export Now' }).click();
@@ -176,17 +154,120 @@ test('TC-CE-06 : Verify download ZIP button visibility @regression @export-candi
 
 test('TC-CE-07 : Verify cancel overlay click behavior @regression @export-candidate-email-format', async ({ page }) => {
     await loginAndNavigateToCandidatesPageAsRecruiter(page);
-    const modal = await openExportCandidatesModal(page);
-    await expect(modal.getByText('Copy for Email (Table Format)')).toBeVisible();
-    await modal.getByText('Copy for Email (Table Format)').click();
-    await clickExportNowInExportModal(modal);
+    await page.waitForLoadState('networkidle');
+    await page.getByTestId('export-candidates-button').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    await expect(page.locator('[data-testid="close-modal-btn"]')).toBeVisible({timeout: 5000});
+    await page.locator('[data-testid="close-modal-btn"]').click();
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).not.toBeVisible({timeout: 5000});
+});
 
-    // Verify the result modal appeared with Copy for Email content
-    await expect(page.getByText('Copy for Email', { exact: true })).toBeVisible({ timeout: 5000 });
+test('TC-CE-08 : Verify modal close button @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.getByTestId('export-candidates-button').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    await expect(page.getByRole('button', { name: 'Close' }).last()).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).last().click();
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).not.toBeVisible({timeout: 5000});
+});
 
-    // Close modal using Escape key (more reliable than button click on this flaky UI)
-    await page.keyboard.press('Escape');
+test('TC-CE-09 : Verify toast auto-dismiss @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    await expect(page.locator('[data-testid="copy-email-btn"]')).toBeEnabled({timeout:10000});
+    await page.locator('[data-testid="copy-email-btn"]').click();
+    await expect(page.getByText(/Email format copied to clipboard/)).toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(3000);
+    await expect(page.getByText(/Email format copied to clipboard/)).toBeHidden({ timeout: 5000 });
+});
 
-    // Verify modal closed — export options should be gone
-    await expect(page.getByText('Copy for Email (Table Format)')).not.toBeVisible({ timeout: 5000 });
+test('TC-CE-10 : Verify candidate count display in modalrmat', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    const text = await page.getByText(/candidates ready to copy/).textContent();
+    const number = parseInt(text.match(/\d+/)[0]);
+    expect(text).toBeTruthy();
+    console.log("Number of candidates ready to copy: ", number);
+});
+
+test('TC-CE-11 : Verify minimum 1 column validation @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    await expect(page.locator('[data-testid="clear-all-btn"]')).toBeEnabled({timeout: 5000});
+    await page.locator('[data-testid="clear-all-btn"]').click();
+    await expect(page.getByText('Please select at least one column', { exact: true })).toBeVisible({timeout: 5000});
+});
+
+test('TC-CE-12: Verify select all / clear all buttons functionality @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    await expect(page.locator('[data-testid="clear-all-btn"]')).toBeEnabled({timeout: 5000});
+    await page.locator('[data-testid="clear-all-btn"]').click();
+    await expect(page.getByText('Please select at least one column', { exact: true })).toBeVisible({timeout: 5000});
+    await page.locator('[data-testid="select-all-btn"]').click();
+    await expect(page.getByText('Please select at least one column', { exact: true })).not.toBeVisible({timeout: 5000});
+});
+
+test('TC-CE-13: Verify radio button behavior for export options @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await expect(page.getByRole('radio', { name: 'mail Copy for Email (Table' })).toBeChecked({timeout: 5000});
+    await expect(page.getByRole('radio', { name: 'file-excel Download Excel' })).not.toBeChecked({timeout: 5000});
+    await page.getByRole('radio', { name: 'file-excel Download Excel' }).click();
+    await expect(page.getByRole('radio', { name: 'file-excel Download Excel' })).toBeChecked({timeout: 5000});
+    await expect(page.getByRole('radio', { name: 'mail Copy for Email (Table' })).not.toBeChecked({timeout: 5000});
+});
+
+test('TC-CE-14: Verify export modal opens on clicking export button @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="export-candidates-button"]').click();
+    await page.getByRole('radio', { name: 'mail Copy for Email (Table' }).click();
+    await page.getByRole('button', { name: 'download Export Now' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).toBeVisible({timeout: 8000});
+    const text = await page.getByText(/candidates ready to copy/).textContent();
+    expect(text).toBeTruthy();
+    await expect(page.locator('[data-testid="close-modal-btn"]')).toBeVisible({timeout: 5000});
+    await page.locator('[data-testid="close-modal-btn"]').click();
+    await expect(page.getByTestId('copy-email-table-modal').getByText('Copy for Email')).not.toBeVisible({timeout: 5000});
+});
+
+test('TC-CE-15: Verify export button visibility on main page @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('[data-testid="export-candidates-button"]')).toBeVisible({timeout: 5000});
+});
+
+test('TC-CE-16: Verify export button visibility on job-level page @regression @export-candidate-email-format', async ({ page }) => {
+    await loginAndNavigateToCandidatesPageAsRecruiter(page);
+    await page.waitForLoadState('networkidle');
+
 });

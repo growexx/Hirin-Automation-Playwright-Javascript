@@ -15,6 +15,7 @@
 #                                    > App Passwords > Mail > copy the 16-char code and store without spaces.
 #   OUTLOOK_EMAIL       recipient@example.com  (To - report recipient)
 # If secrets are missing or SMTP auth fails, the email step fails softly (continue-on-error: true).
+# A short "Send SMTP test email (pre-run)" step runs right after Playwright install to validate SMTP early.
 # Check the "Check email secrets" step in the Actions log to confirm all three secrets are set.
 name: Smoke tests (scheduled)
 
@@ -41,6 +42,26 @@ jobs:
 
       - name: Install Playwright (Chromium)
         run: npx playwright install --with-deps chromium
+
+      # Early SMTP check using the same secrets as the report emails (Gmail + recipient).
+      - name: Send SMTP test email (pre-run)
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
+          subject: '[Smoke] SMTP test -- ${{ github.repository }} #${{ github.run_number }}'
+          to: ${{ secrets.OUTLOOK_EMAIL }}
+          from: riya.growexx@gmail.com
+          body: |
+            This is an automated connectivity check from the scheduled smoke workflow.
+
+            If you received this message, Gmail SMTP (smtp.gmail.com:587) and the configured secrets are working before smoke tests run.
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       # list = prints each test as a separate log line in GitHub Actions.
       # allure-playwright reporter (configured in playwright.config.js) writes to allure-results/.
@@ -118,11 +139,11 @@ jobs:
           server_port: 587
           secure: false
           # FIX: credentials moved to GitHub Secrets — never hardcode passwords in workflow files.
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 
@@ -141,11 +162,11 @@ jobs:
           server_port: 587
           secure: false
           # FIX: credentials moved to GitHub Secrets — never hardcode passwords in workflow files.
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
 

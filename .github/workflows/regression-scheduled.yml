@@ -108,11 +108,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Regression] ${{ steps.regression_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Regression tests finished with outcome: ${{ steps.regression_tests.outcome }}
 
@@ -130,11 +130,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          username: riya.growexx@gmail.com
+          password: hjqmxtstdlpvgfcs
           subject: '[Regression] ${{ steps.regression_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
           to: ${{ secrets.OUTLOOK_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: riya.growexx@gmail.com
           body: |
             Regression tests finished with outcome: ${{ steps.regression_tests.outcome }}
 

@@ -50,11 +50,10 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          secure: false
           username: riya.growexx@gmail.com
           password: hjqmxtstdlpvgfcs
           subject: '[Smoke] SMTP test -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
+          to: bikash.mazumder@growexx.com
           from: riya.growexx@gmail.com
           body: |
             This is an automated connectivity check from the scheduled smoke workflow.
@@ -137,12 +136,10 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          secure: false
-          # FIX: credentials moved to GitHub Secrets — never hardcode passwords in workflow files.
           username: riya.growexx@gmail.com
           password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
+          to: bikash.mazumder@growexx.com
           from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}
@@ -160,12 +157,10 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          secure: false
-          # FIX: credentials moved to GitHub Secrets — never hardcode passwords in workflow files.
           username: riya.growexx@gmail.com
           password: hjqmxtstdlpvgfcs
           subject: '[Smoke] ${{ steps.smoke_tests.outcome }} -- ${{ github.repository }} #${{ github.run_number }}'
-          to: ${{ secrets.OUTLOOK_EMAIL }}
+          to: bikash.mazumder@growexx.com
           from: riya.growexx@gmail.com
           body: |
             Smoke tests finished with outcome: ${{ steps.smoke_tests.outcome }}

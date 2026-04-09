@@ -1,4 +1,4 @@
-# Push/PR: smoke tests only, single browser (avoids ~297 tests × 4 projects ≈ 1188 runs).
+# Push/PR: smoke tests only, single browser
 #
 # Live test names in the Actions log: enabled via --reporter=list (updates as each test runs).
 #
